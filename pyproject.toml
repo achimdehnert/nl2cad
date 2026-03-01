@@ -1,0 +1,25 @@
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["packages/*/src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "packages/nl2cad-core/src:packages/nl2cad-areas/src:packages/nl2cad-brandschutz/src:packages/nl2cad-gaeb/src:packages/nl2cad-nlp/src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "packages"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
