@@ -1,60 +1,28 @@
-name: Publish to TestPyPI
+name: Publish iil-nl2cadfw to PyPI
 
 on:
-  push:
-    tags:
-      - "nl2cad-core@*"
-      - "nl2cad-areas@*"
-      - "nl2cad-brandschutz@*"
-      - "nl2cad-gaeb@*"
-      - "nl2cad-nlp@*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.1.0)"
+        required: true
+        default: "0.1.0"
 
 jobs:
-  publish:
-    name: Build and publish ${{ github.ref_name }}
+  build-and-publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
-
-      - name: Set up Python
-        run: uv python install 3.11
-
-      - name: Determine package from tag
-        id: pkg
-        run: |
-          TAG="${{ github.ref_name }}"
-          PKG="${TAG%@*}"
-          VERSION="${TAG#*@}"
-          echo "name=$PKG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Verify version matches pyproject.toml
-        run: |
-          TOML_VER=$(grep '^version' packages/${{ steps.pkg.outputs.name }}/pyproject.toml \
-            | head -1 | sed 's/.*= *"\(.*\)"/\1/')
-          TAG_VER="${{ steps.pkg.outputs.version }}"
-          if [ "$TOML_VER" != "$TAG_VER" ]; then
-            echo "ERROR: pyproject.toml version ($TOML_VER) != tag version ($TAG_VER)"
-            exit 1
-          fi
-
-      - name: Install workspace dependencies
-        run: uv sync --all-packages --locked
-
-      - name: Build package
-        run: uv build --package ${{ steps.pkg.outputs.name }}
-
-      - name: Publish to TestPyPI
-        run: |
-          uv publish \
-            --publish-url https://test.pypi.org/legacy/ \
-            --token ${{ secrets.TEST_PYPI_TOKEN }} \
-            dist/*
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install build dependencies
+        run: pip install hatchling build twine
+      - name: Build
+        run: python -m hatchling build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
