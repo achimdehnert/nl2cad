@@ -77,53 +77,129 @@ ROOM_KEYWORD_TO_DIN277: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 # Layer die KEINE Nutzflächen enthalten (werden bei Raumerkennung ignoriert)
-EXCLUDED_LAYER_KEYWORDS: frozenset[str] = frozenset([
-    "symbol", "symbole", "schraffur", "hatch",
-    "text", "beschriftung", "annotation",
-    "bemaßung", "dimension", "dim",
-    "achse", "axis", "grid", "hilfslin", "construction",
-    "möbel", "furniture", "einrichtung",
-    "elektro", "electric", "sanitär", "sanitary",
-    "heizung", "heating", "lüftung", "hvac",
-    "legende", "legend", "rahmen", "frame", "border",
-    "logo", "titel", "title", "north", "nord",
-    "maßstab", "scale", "viewport", "defpoints",
-    "ergänzung", "notiz", "note", "comment",
-])
+EXCLUDED_LAYER_KEYWORDS: frozenset[str] = frozenset(
+    [
+        "symbol",
+        "symbole",
+        "schraffur",
+        "hatch",
+        "text",
+        "beschriftung",
+        "annotation",
+        "bemaßung",
+        "dimension",
+        "dim",
+        "achse",
+        "axis",
+        "grid",
+        "hilfslin",
+        "construction",
+        "möbel",
+        "furniture",
+        "einrichtung",
+        "elektro",
+        "electric",
+        "sanitär",
+        "sanitary",
+        "heizung",
+        "heating",
+        "lüftung",
+        "hvac",
+        "legende",
+        "legend",
+        "rahmen",
+        "frame",
+        "border",
+        "logo",
+        "titel",
+        "title",
+        "north",
+        "nord",
+        "maßstab",
+        "scale",
+        "viewport",
+        "defpoints",
+        "ergänzung",
+        "notiz",
+        "note",
+        "comment",
+    ]
+)
 
 # Layer-Keywords für Brandschutz-Erkennung
 FLUCHTWEG_KEYWORDS: tuple[str, ...] = (
-    "flucht", "rettung", "escape", "notweg", "fluchtweg",
-    "rettungsweg", "emergency",
+    "flucht",
+    "rettung",
+    "escape",
+    "notweg",
+    "fluchtweg",
+    "rettungsweg",
+    "emergency",
 )
 NOTAUSGANG_KEYWORDS: tuple[str, ...] = (
-    "notausgang", "emergency exit", "notaus", "ausgang_not",
+    "notausgang",
+    "emergency exit",
+    "notaus",
+    "ausgang_not",
 )
 BRANDABSCHNITT_KEYWORDS: tuple[str, ...] = (
-    "brand", "brandwand", "brandschutz", "fire", "feuerwand",
-    "brandabschnitt", "brandschutzwand",
+    "brand",
+    "brandwand",
+    "brandschutz",
+    "fire",
+    "feuerwand",
+    "brandabschnitt",
+    "brandschutzwand",
 )
 LOESCHEINRICHTUNG_KEYWORDS: tuple[str, ...] = (
-    "feuerlöscher", "hydrant", "sprinkler", "lösch",
-    "fire extinguisher", "löscher",
+    "feuerlöscher",
+    "hydrant",
+    "sprinkler",
+    "lösch",
+    "fire extinguisher",
+    "löscher",
 )
 BRANDSCHUTZTUER_KEYWORDS: tuple[str, ...] = (
-    "t30", "t60", "t90", "t120",
-    "brandschutztür", "brandschutztuer", "feuerschutztür",
+    "t30",
+    "t60",
+    "t90",
+    "t120",
+    "brandschutztür",
+    "brandschutztuer",
+    "feuerschutztür",
 )
 
 # ---------------------------------------------------------------------------
 # Feuerwiderstandsklassen nach DIN 4102 / EN 13501
 # ---------------------------------------------------------------------------
 FEUERWIDERSTANDSKLASSEN: tuple[str, ...] = (
-    "F30", "F60", "F90", "F120", "F180",    # DIN 4102
-    "REI30", "REI60", "REI90", "REI120",    # EN 13501
-    "EI30", "EI60", "EI90", "EI120",
-    "E30", "E60", "E90",
-    "R30", "R60", "R90",
+    "F30",
+    "F60",
+    "F90",
+    "F120",
+    "F180",  # DIN 4102
+    "REI30",
+    "REI60",
+    "REI90",
+    "REI120",  # EN 13501
+    "EI30",
+    "EI60",
+    "EI90",
+    "EI120",
+    "E30",
+    "E60",
+    "E90",
+    "R30",
+    "R60",
+    "R90",
 )
 
 BRANDSCHUTZTUER_KLASSEN: tuple[str, ...] = (
-    "T30", "T60", "T90", "T120",
-    "EI230", "EI260", "EI290",
+    "T30",
+    "T60",
+    "T90",
+    "T120",
+    "EI230",
+    "EI260",
+    "EI290",
 )

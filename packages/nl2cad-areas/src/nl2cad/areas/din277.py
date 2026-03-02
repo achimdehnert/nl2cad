@@ -4,14 +4,15 @@ nl2cad.areas.din277
 DIN 277 Flächenberechnung (Ausgabe 2016).
 Klassifiziert Räume und berechnet Nutzungsflächenanteile.
 """
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
 
 from nl2cad.core.constants import DIN277_CODES, ROOM_KEYWORD_TO_DIN277
-from nl2cad.core.models.ifc import IFCModel, IFCRoom
-from nl2cad.core.models.dxf import DXFModel, DXFRoom
+from nl2cad.core.models.dxf import DXFModel
+from nl2cad.core.models.ifc import IFCModel
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DIN277Category:
     """Eine DIN 277 Nutzungsart mit aggregierten Flächen."""
+
     code: str
     name: str
     room_count: int = 0
@@ -37,6 +39,7 @@ class DIN277Result:
     Enthält alle Kategorien (NUF, TF, VF, FF, KGF)
     sowie Gesamtflächen.
     """
+
     categories: dict[str, DIN277Category] = field(default_factory=dict)
     unclassified_rooms: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -45,7 +48,8 @@ class DIN277Result:
     def nutzungsflaeche_m2(self) -> float:
         """Hauptnutzfläche NUF (alle NUF_x)."""
         return sum(
-            c.area_m2 for code, c in self.categories.items()
+            c.area_m2
+            for code, c in self.categories.items()
             if code.startswith("NUF")
         )
 
@@ -53,7 +57,8 @@ class DIN277Result:
     def verkehrsflaeche_m2(self) -> float:
         """Verkehrsfläche VF."""
         return sum(
-            c.area_m2 for code, c in self.categories.items()
+            c.area_m2
+            for code, c in self.categories.items()
             if code.startswith("VF")
         )
 
@@ -65,7 +70,11 @@ class DIN277Result:
     @property
     def netto_grundflaeche_m2(self) -> float:
         """NGF = NUF + TF + VF."""
-        return self.nutzungsflaeche_m2 + self.technische_flaeche_m2 + self.verkehrsflaeche_m2
+        return (
+            self.nutzungsflaeche_m2
+            + self.technische_flaeche_m2
+            + self.verkehrsflaeche_m2
+        )
 
     @property
     def total_rooms(self) -> int:
@@ -113,7 +122,11 @@ class DIN277Calculator:
     def calculate_from_ifc(self, model: IFCModel) -> DIN277Result:
         """Berechnet DIN 277 aus IFCModel."""
         rooms_data = [
-            {"name": r.name, "area_m2": r.area_m2, "din277_code": r.din277_code}
+            {
+                "name": r.name,
+                "area_m2": r.area_m2,
+                "din277_code": r.din277_code,
+            }
             for r in model.rooms
         ]
         return self.calculate(rooms_data)
@@ -121,7 +134,11 @@ class DIN277Calculator:
     def calculate_from_dxf(self, model: DXFModel) -> DIN277Result:
         """Berechnet DIN 277 aus DXFModel."""
         rooms_data = [
-            {"name": r.name, "area_m2": r.area_m2, "din277_code": r.din277_code}
+            {
+                "name": r.name,
+                "area_m2": r.area_m2,
+                "din277_code": r.din277_code,
+            }
             for r in model.rooms
         ]
         return self.calculate(rooms_data)
@@ -145,7 +162,9 @@ class DIN277Calculator:
 
             if not code:
                 code = "NUF_8"  # Default: Sonstige Nutzung
-                result.warnings.append(f"Raum '{name}' nicht klassifiziert → NUF_8")
+                result.warnings.append(
+                    f"Raum '{name}' nicht klassifiziert → NUF_8"
+                )
 
             if code not in result.categories:
                 category_name = DIN277_CODES.get(code, "Unbekannt")

@@ -4,6 +4,7 @@ nl2cad.core.parsers.dxf_parser
 ezdxf-Wrapper. Konvertiert DXF-Dateien → DXFModel Dataclasses.
 Unterstützt: DXF R12 bis R2018, DWG via Konvertierung.
 """
+
 from __future__ import annotations
 
 import logging
@@ -12,7 +13,13 @@ from pathlib import Path
 
 from nl2cad.core.constants import EXCLUDED_LAYER_KEYWORDS
 from nl2cad.core.exceptions import DXFParseError, UnsupportedFormatError
-from nl2cad.core.models.dxf import BoundingBox, DXFLayer, DXFModel, DXFRoom, Point2D
+from nl2cad.core.models.dxf import (
+    BoundingBox,
+    DXFLayer,
+    DXFModel,
+    DXFRoom,
+    Point2D,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +82,12 @@ class DXFParser:
         )
         return model
 
-    def parse_bytes(self, content: bytes, filename: str = "upload.dxf") -> DXFModel:
+    def parse_bytes(
+        self, content: bytes, filename: str = "upload.dxf"
+    ) -> DXFModel:
         """Parst DXF aus Bytes (z.B. Django File Upload)."""
         import tempfile
+
         with tempfile.NamedTemporaryFile(suffix=".dxf", delete=False) as tmp:
             tmp.write(content)
             return self.parse(tmp.name)
@@ -93,12 +103,14 @@ class DXFParser:
             name = layer.dxf.name
             if name.startswith("*") or name == "0":
                 continue
-            layers.append(DXFLayer(
-                name=name,
-                color=getattr(layer.dxf, "color", 7),
-                linetype=getattr(layer.dxf, "linetype", "CONTINUOUS"),
-                is_frozen=bool(getattr(layer.dxf, "flags", 0) & 1),
-            ))
+            layers.append(
+                DXFLayer(
+                    name=name,
+                    color=getattr(layer.dxf, "color", 7),
+                    linetype=getattr(layer.dxf, "linetype", "CONTINUOUS"),
+                    is_frozen=bool(getattr(layer.dxf, "flags", 0) & 1),
+                )
+            )
         return layers
 
     def _extract_rooms(self, doc) -> list[DXFRoom]:
@@ -135,7 +147,9 @@ class DXFParser:
                 continue
 
             try:
-                vertices = [Point2D(x, y) for x, y in entity.get_points(format="xy")]
+                vertices = [
+                    Point2D(x, y) for x, y in entity.get_points(format="xy")
+                ]
                 if len(vertices) < 3:
                     continue
 
@@ -251,7 +265,9 @@ class DXFParser:
         for i in range(n):
             xi, yi = polygon[i].x, polygon[i].y
             xj, yj = polygon[j].x, polygon[j].y
-            if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi) + xi):
+            if ((yi > y) != (yj > y)) and (
+                x < (xj - xi) * (y - yi) / (yj - yi) + xi
+            ):
                 inside = not inside
             j = i
         return inside

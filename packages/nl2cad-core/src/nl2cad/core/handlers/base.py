@@ -4,19 +4,20 @@ nl2cad.core.handlers.base
 Abstrakte Basis-Klassen für den Handler-Pipeline-Pattern.
 Framework-agnostisch — kein Django, kein HTTP.
 """
+
 from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 from nl2cad.core.exceptions import HandlerError, PipelineError
 
 logger = logging.getLogger(__name__)
 
 
-class HandlerStatus(str, Enum):
+class HandlerStatus(StrEnum):
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -28,6 +29,7 @@ class HandlerStatus(str, Enum):
 @dataclass
 class HandlerResult:
     """Ergebnis eines einzelnen Handlers."""
+
     success: bool
     handler_name: str
     status: HandlerStatus = HandlerStatus.PENDING
@@ -139,7 +141,7 @@ class CADHandlerPipeline:
         self._context: dict = {}
         self.continue_on_error = continue_on_error
 
-    def add(self, handler: BaseCADHandler) -> "CADHandlerPipeline":
+    def add(self, handler: BaseCADHandler) -> CADHandlerPipeline:
         """Fügt Handler zur Pipeline hinzu. Chainable."""
         self._handlers.append(handler)
         return self

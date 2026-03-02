@@ -3,13 +3,14 @@ nl2cad.core.models.dxf
 ======================
 Dataclasses für DXF-Domänenobjekte.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class DXFEntityType(str, Enum):
+class DXFEntityType(StrEnum):
     LINE = "LINE"
     LWPOLYLINE = "LWPOLYLINE"
     POLYLINE = "POLYLINE"
@@ -22,8 +23,9 @@ class DXFEntityType(str, Enum):
     DIMENSION = "DIMENSION"
 
 
-class CADCommandType(str, Enum):
+class CADCommandType(StrEnum):
     """Bekannte CAD-Befehle für NL2DXF-Generator."""
+
     LINE = "LINE"
     RECT = "RECT"
     CIRCLE = "CIRCLE"
@@ -68,6 +70,7 @@ class BoundingBox:
 @dataclass
 class DXFLayer:
     """DXF-Layer mit Metadaten."""
+
     name: str = ""
     color: int = 7
     linetype: str = "CONTINUOUS"
@@ -79,6 +82,7 @@ class DXFLayer:
 @dataclass
 class DXFRoom:
     """Erkannter Raum aus DXF."""
+
     name: str = ""
     layer: str = ""
     area_m2: float = 0.0
@@ -95,6 +99,7 @@ class DXFRoom:
 @dataclass
 class CADCommand:
     """Parsed CAD command (für NL2DXF)."""
+
     command: CADCommandType | str
     params: dict[str, float | str] = field(default_factory=dict)
     layer: str = "0"
@@ -105,6 +110,7 @@ class DXFModel:
     """
     Vollständiges geparses DXF-Modell.
     """
+
     source_file: str = ""
     dxf_version: str = ""
     units: str = "m"

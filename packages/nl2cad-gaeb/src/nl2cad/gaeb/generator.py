@@ -1,8 +1,11 @@
 """nl2cad.gaeb.generator — GAEB X84 XML + Excel Generator."""
+
 from __future__ import annotations
+
 import xml.etree.ElementTree as ET
 from io import BytesIO
-from .models import Leistungsverzeichnis, GAEBPhase
+
+from .models import Leistungsverzeichnis
 
 
 class GAEBGenerator:
@@ -28,13 +31,16 @@ class GAEBGenerator:
                 ET.SubElement(pos_el, "Qty").text = str(pos.menge)
                 ET.SubElement(pos_el, "QU").text = pos.einheit
         output = BytesIO()
-        ET.ElementTree(root).write(output, encoding="utf-8", xml_declaration=True)
+        ET.ElementTree(root).write(
+            output, encoding="utf-8", xml_declaration=True
+        )
         output.seek(0)
         return output
 
     def generate_excel(self, lv: Leistungsverzeichnis) -> BytesIO:
         """Generiert Excel-LV."""
         from openpyxl import Workbook
+
         wb = Workbook()
         ws = wb.active
         ws.title = "Leistungsverzeichnis"
@@ -42,8 +48,16 @@ class GAEBGenerator:
         for los in lv.lose:
             ws.append([los.oz, los.bezeichnung, "", "", "", ""])
             for pos in los.positionen:
-                ws.append([pos.oz, pos.kurztext, float(pos.menge), pos.einheit,
-                           float(pos.einheitspreis), float(pos.gesamtpreis)])
+                ws.append(
+                    [
+                        pos.oz,
+                        pos.kurztext,
+                        float(pos.menge),
+                        pos.einheit,
+                        float(pos.einheitspreis),
+                        float(pos.gesamtpreis),
+                    ]
+                )
         output = BytesIO()
         wb.save(output)
         output.seek(0)

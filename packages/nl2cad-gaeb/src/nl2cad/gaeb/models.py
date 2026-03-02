@@ -1,22 +1,24 @@
 """nl2cad.gaeb.models — GAEB Domäne-Dataclasses."""
+
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from decimal import Decimal
 from datetime import date
-from enum import Enum
+from decimal import Decimal
+from enum import StrEnum
 
 
-class GAEBPhase(str, Enum):
-    X81 = "81"   # Ausschreibung
-    X82 = "82"   # Vergabe
-    X83 = "83"   # Angebot mit Mengen+Preisen
-    X84 = "84"   # Auftragserteilung
-    X85 = "85"   # Abrechnung
+class GAEBPhase(StrEnum):
+    X81 = "81"  # Ausschreibung
+    X82 = "82"  # Vergabe
+    X83 = "83"  # Angebot mit Mengen+Preisen
+    X84 = "84"  # Auftragserteilung
+    X85 = "85"  # Abrechnung
 
 
 @dataclass
 class Position:
-    oz: str                        # Ordnungszahl "01.001"
+    oz: str  # Ordnungszahl "01.001"
     kurztext: str
     langtext: str = ""
     menge: Decimal = Decimal("0")
@@ -34,7 +36,7 @@ class LosGruppe:
     oz: str
     bezeichnung: str
     positionen: list[Position] = field(default_factory=list)
-    untergruppen: list["LosGruppe"] = field(default_factory=list)
+    untergruppen: list[LosGruppe] = field(default_factory=list)
 
     @property
     def summe(self) -> Decimal:

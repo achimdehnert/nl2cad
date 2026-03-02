@@ -20,7 +20,9 @@ class DXFParseError(NL2CADError):
 class UnsupportedFormatError(NL2CADError):
     """Dateiformat wird nicht unterstützt."""
 
-    def __init__(self, format_: str, supported: list[str] | None = None) -> None:
+    def __init__(
+        self, format_: str, supported: list[str] | None = None
+    ) -> None:
         supported = supported or [".ifc", ".dxf", ".dwg"]
         super().__init__(
             f"Format '{format_}' nicht unterstützt. "

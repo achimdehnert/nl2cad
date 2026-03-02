@@ -13,6 +13,10 @@ dependencies = [
     "nl2cad-areas>=0.1.0",
 ]
 
+[tool.uv.sources]
+nl2cad-core  = { workspace = true }
+nl2cad-areas = { workspace = true }
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.4"]
 

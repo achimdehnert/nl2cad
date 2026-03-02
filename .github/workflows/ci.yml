@@ -1,0 +1,118 @@
+# .github/workflows/ci.yml
+# CI fuer nl2cad Monorepo — uv workspace, ruff, mypy, pytest
+# FIX W-05: Fehlender CI-Workflow (ADR-001-REVIEW.md)
+#
+# Idempotent: mehrfaches Ausfuehren desselben Commits aendert nichts.
+# Robustheit: set -euo pipefail via bash steps; klare Exit Codes.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (ruff + mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Check uv.lock is up-to-date
+        run: uv lock --check
+
+      - name: Install all workspace dependencies
+        run: uv sync --all-packages --dev --locked
+
+      - name: Ruff check
+        # Kein --fix in CI — nur pruefen, nicht auto-mutieren
+        run: uv run ruff check packages/
+
+      - name: Ruff format check
+        run: uv run ruff format --check packages/
+
+      - name: Mypy
+        run: uv run mypy packages/
+
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install all workspace dependencies
+        run: uv sync --all-packages --dev --locked
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest \
+            --cov=packages \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=80 \
+            -v
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+  # Package-Build: prueft ob alle Packages korrekt gebaut werden koennen
+  build:
+    name: Build packages
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install all workspace dependencies
+        run: uv sync --all-packages --dev --locked
+
+      - name: Build nl2cad-core
+        run: uv build packages/nl2cad-core
+
+      - name: Build nl2cad-areas
+        run: uv build packages/nl2cad-areas
+
+      - name: Build nl2cad-brandschutz
+        run: uv build packages/nl2cad-brandschutz
+
+      - name: Build nl2cad-gaeb
+        run: uv build packages/nl2cad-gaeb
+
+      - name: Build nl2cad-nlp
+        run: uv build packages/nl2cad-nlp

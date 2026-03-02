@@ -16,6 +16,9 @@ classifiers = [
 
 dependencies = ["nl2cad-core>=0.1.0"]
 
+[tool.uv.sources]
+nl2cad-core = { workspace = true }
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.4", "mypy>=1.10"]
 

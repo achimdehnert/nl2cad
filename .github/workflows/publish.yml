@@ -47,6 +47,9 @@ jobs:
             exit 1
           fi
 
+      - name: Install workspace dependencies
+        run: uv sync --all-packages --locked
+
       - name: Build package
         run: |
           uv build --package ${{ steps.pkg.outputs.name }}

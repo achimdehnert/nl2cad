@@ -9,6 +9,7 @@ Berechnungsregeln:
 - Nicht anrechenbar: Raumhöhe < 1m → 0%
 - Terrassen, Balkone, Loggien → 25-50% je nach Art
 """
+
 from __future__ import annotations
 
 import logging
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WoFlVRoom:
     """Raum für WoFlV-Berechnung."""
+
     name: str
     raw_area_m2: float
     height_m: float = 2.5
@@ -49,6 +51,7 @@ class WoFlVRoom:
 @dataclass
 class WoFlVResult:
     """Ergebnis der WoFlV-Berechnung."""
+
     rooms: list[WoFlVRoom] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
@@ -113,7 +116,9 @@ class WoFlVCalculator:
             )
 
             if room.raw_area_m2 <= 0:
-                result.warnings.append(f"Raum '{room.name}': Fläche = 0, wird ignoriert")
+                result.warnings.append(
+                    f"Raum '{room.name}': Fläche = 0, wird ignoriert"
+                )
                 continue
 
             result.rooms.append(room)

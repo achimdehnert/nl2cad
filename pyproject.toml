@@ -1,3 +1,17 @@
+[project]
+name = "nl2cad"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
 [tool.uv.workspace]
 members = ["packages/*"]
 
@@ -8,7 +22,7 @@ src = ["packages/*/src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
-ignore = ["E501"]
+ignore = ["E501", "TC001", "TC002", "TC003"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -23,3 +37,10 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+pythonpath = [
+    "packages/nl2cad-core/src",
+    "packages/nl2cad-areas/src",
+    "packages/nl2cad-brandschutz/src",
+    "packages/nl2cad-gaeb/src",
+    "packages/nl2cad-nlp/src",
+]

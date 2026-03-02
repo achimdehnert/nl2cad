@@ -1,11 +1,12 @@
 """nl2cad.nlp.intent — Intent-Klassifikation aus NL-Queries."""
+
 from __future__ import annotations
-import re
+
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class NLIntent(str, Enum):
+class NLIntent(StrEnum):
     RAUMANALYSE = "raumanalyse"
     DIN277 = "din277"
     WOFLV = "woflv"
@@ -26,14 +27,29 @@ class IntentResult:
 
 
 _INTENT_PATTERNS: list[tuple[NLIntent, list[str]]] = [
-    (NLIntent.RAUMANALYSE,      ["raum", "räume", "fläche", "grundriss", "raumliste"]),
-    (NLIntent.DIN277,           ["din 277", "din277", "nutzungsart", "nuf", "ngf"]),
-    (NLIntent.WOFLV,            ["woflv", "wohnfläche", "wohnflächenverordnung"]),
-    (NLIntent.MASSENERMITTLUNG, ["massen", "volumen", "massenermittlung", "mengen"]),
-    (NLIntent.GAEB_EXPORT,      ["gaeb", "leistungsverzeichnis", "lv", "ausschreibung"]),
-    (NLIntent.BRANDSCHUTZ,      ["brandschutz", "brandabschnitt", "f30", "f60", "f90"]),
-    (NLIntent.FLUCHTWEG,        ["fluchtweg", "rettungsweg", "notausgang", "asr"]),
-    (NLIntent.NL2DXF,           ["zeichne", "erstelle", "generiere", "dxf", "cad-befehl"]),
+    (
+        NLIntent.RAUMANALYSE,
+        ["raum", "räume", "fläche", "grundriss", "raumliste"],
+    ),
+    (NLIntent.DIN277, ["din 277", "din277", "nutzungsart", "nuf", "ngf"]),
+    (NLIntent.WOFLV, ["woflv", "wohnfläche", "wohnflächenverordnung"]),
+    (
+        NLIntent.MASSENERMITTLUNG,
+        ["massen", "volumen", "massenermittlung", "mengen"],
+    ),
+    (
+        NLIntent.GAEB_EXPORT,
+        ["gaeb", "leistungsverzeichnis", "lv", "ausschreibung"],
+    ),
+    (
+        NLIntent.BRANDSCHUTZ,
+        ["brandschutz", "brandabschnitt", "f30", "f60", "f90"],
+    ),
+    (NLIntent.FLUCHTWEG, ["fluchtweg", "rettungsweg", "notausgang", "asr"]),
+    (
+        NLIntent.NL2DXF,
+        ["zeichne", "erstelle", "generiere", "dxf", "cad-befehl"],
+    ),
 ]
 
 

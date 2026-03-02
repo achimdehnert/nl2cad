@@ -4,6 +4,7 @@ nl2cad.brandschutz.analyzer
 Haupt-Einstiegspunkt für Brandschutz-Analyse aus IFC/DXF.
 Orchestriert Layer-Erkennung und Regelwerk-Checks.
 """
+
 from __future__ import annotations
 
 import logging
@@ -12,8 +13,8 @@ import re
 from nl2cad.core.constants import (
     BRANDABSCHNITT_KEYWORDS,
     BRANDSCHUTZTUER_KEYWORDS,
-    FLUCHTWEG_KEYWORDS,
     FEUERWIDERSTANDSKLASSEN,
+    FLUCHTWEG_KEYWORDS,
     LOESCHEINRICHTUNG_KEYWORDS,
     NOTAUSGANG_KEYWORDS,
 )
@@ -22,11 +23,9 @@ from nl2cad.core.models.ifc import IFCModel
 from .models import (
     Brandabschnitt,
     BrandschutzAnalyse,
-    BrandschutzKategorie,
     Brandschutzeinrichtung,
-    BrandschutzMangel,
+    BrandschutzKategorie,
     Fluchtweg,
-    MängelSchwere,
 )
 from .rules.asr_a23 import ASRA23Validator
 from .rules.din4102 import DIN4102Validator
@@ -113,7 +112,11 @@ class BrandschutzAnalyzer:
         # Layer-basierte Erkennung
         for entity in msp:
             try:
-                layer_name = entity.dxf.layer.lower() if hasattr(entity.dxf, "layer") else ""
+                layer_name = (
+                    entity.dxf.layer.lower()
+                    if hasattr(entity.dxf, "layer")
+                    else ""
+                )
                 self._process_entity(entity, layer_name, etage, analyse)
             except Exception as e:
                 logger.debug("[BrandschutzAnalyzer] Entity skip: %s", e)
@@ -188,7 +191,7 @@ class BrandschutzAnalyzer:
             analyse.einrichtungen.append(einrichtung)
 
     def _estimate_length(self, entity) -> float:
-        """Schätzt Länge einer Entity (LINE, LWPOLYLINE)."""
+        """Schätzt Laenge einer Entity (LINE, LWPOLYLINE). 0.0 bei unbekanntem Typ."""
         try:
             if entity.dxftype() == "LINE":
                 dx = entity.dxf.end.x - entity.dxf.start.x
@@ -198,12 +201,18 @@ class BrandschutzAnalyzer:
                 pts = list(entity.get_points(format="xy"))
                 length = 0.0
                 for i in range(len(pts) - 1):
-                    dx = pts[i+1][0] - pts[i][0]
-                    dy = pts[i+1][1] - pts[i][1]
+                    dx = pts[i + 1][0] - pts[i][0]
+                    dy = pts[i + 1][1] - pts[i][1]
                     length += (dx**2 + dy**2) ** 0.5
                 return length
-        except Exception:
-            pass
+            logger.debug(
+                "[BrandschutzAnalyzer] Unbekannter Entity-Typ fuer Laenge: %s",
+                entity.dxftype(),
+            )
+        except Exception as e:
+            logger.debug(
+                "[BrandschutzAnalyzer] Laengenberechnung fehlgeschlagen: %s", e
+            )
         return 0.0
 
     def _extract_feuerwiderstand(self, layer_name: str) -> str:

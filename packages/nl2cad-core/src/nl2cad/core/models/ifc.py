@@ -5,13 +5,14 @@ Dataclasses für IFC-Domänenobjekte.
 Kein Django, kein Pydantic — reine stdlib dataclasses.
 Alle Maß-Felder tragen Einheits-Suffix (_m2, _m, _m3).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class IFCElementType(str, Enum):
+class IFCElementType(StrEnum):
     ROOM = "IfcSpace"
     WALL = "IfcWall"
     DOOR = "IfcDoor"
@@ -26,6 +27,7 @@ class IFCElementType(str, Enum):
 @dataclass
 class IFCRoom:
     """Raum/Space aus IFC (IfcSpace)."""
+
     ifc_id: str = ""
     name: str = ""
     long_name: str = ""
@@ -44,6 +46,7 @@ class IFCRoom:
 @dataclass
 class IFCWall:
     """Wand aus IFC (IfcWall / IfcWallStandardCase)."""
+
     ifc_id: str = ""
     name: str = ""
     area_m2: float = 0.0
@@ -58,6 +61,7 @@ class IFCWall:
 @dataclass
 class IFCDoor:
     """Tür aus IFC (IfcDoor)."""
+
     ifc_id: str = ""
     name: str = ""
     width_m: float = 0.0
@@ -71,6 +75,7 @@ class IFCDoor:
 @dataclass
 class IFCWindow:
     """Fenster aus IFC (IfcWindow)."""
+
     ifc_id: str = ""
     name: str = ""
     width_m: float = 0.0
@@ -82,6 +87,7 @@ class IFCWindow:
 @dataclass
 class IFCSlab:
     """Decke/Boden aus IFC (IfcSlab)."""
+
     ifc_id: str = ""
     name: str = ""
     area_m2: float = 0.0
@@ -94,6 +100,7 @@ class IFCSlab:
 @dataclass
 class IFCFloor:
     """Geschoss (IfcBuildingStorey)."""
+
     ifc_id: str = ""
     name: str = ""
     elevation_m: float = 0.0
@@ -111,6 +118,7 @@ class IFCModel:
     Vollständiges geparses IFC-Modell.
     Einstiegspunkt für alle weiteren Analysen.
     """
+
     project_name: str = ""
     project_description: str = ""
     site_name: str = ""

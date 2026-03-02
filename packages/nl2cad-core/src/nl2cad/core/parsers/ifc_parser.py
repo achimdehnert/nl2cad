@@ -3,6 +3,7 @@ nl2cad.core.parsers.ifc_parser
 ===============================
 ifcopenshell-Wrapper. Konvertiert IFC-Dateien → IFCModel Dataclasses.
 """
+
 from __future__ import annotations
 
 import logging
@@ -62,7 +63,9 @@ class IFCParser:
         try:
             ifc_file = ifcopenshell.open(str(path))
         except Exception as e:
-            raise IFCParseError(f"Konnte IFC-Datei nicht öffnen: {path.name}") from e
+            raise IFCParseError(
+                f"Konnte IFC-Datei nicht öffnen: {path.name}"
+            ) from e
 
         model = IFCModel(source_file=str(path))
 
@@ -80,12 +83,24 @@ class IFCParser:
         )
         return model
 
-    def parse_bytes(self, content: bytes, filename: str = "upload.ifc") -> IFCModel:
+    def parse_bytes(
+        self, content: bytes, filename: str = "upload.ifc"
+    ) -> IFCModel:
         """Parst IFC aus Bytes (z.B. Django File Upload)."""
+        import os
         import tempfile
-        with tempfile.NamedTemporaryFile(suffix=".ifc", delete=False) as tmp:
-            tmp.write(content)
-            return self.parse(tmp.name)
+
+        tmp_path: str | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                suffix=".ifc", delete=False
+            ) as tmp:
+                tmp.write(content)
+                tmp_path = tmp.name
+            return self.parse(tmp_path)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
     # ------------------------------------------------------------------
     # Private Methoden
@@ -138,7 +153,9 @@ class IFCParser:
 
         return floors
 
-    def _extract_rooms(self, ifc_file, storey, floor_name: str) -> list[IFCRoom]:
+    def _extract_rooms(
+        self, ifc_file, storey, floor_name: str
+    ) -> list[IFCRoom]:
         """Extrahiert IfcSpace-Elemente."""
         rooms: list[IFCRoom] = []
 
@@ -146,10 +163,14 @@ class IFCParser:
             import ifcopenshell.util.element as ifc_util
 
             spaces = [
-                el for el in ifc_util.get_decomposition(storey)
+                el
+                for el in ifc_util.get_decomposition(storey)
                 if el.is_a("IfcSpace")
             ]
-        except Exception:
+        except Exception as e:
+            logger.debug(
+                "[IFCParser] get_decomposition fehlgeschlagen, Fallback: %s", e
+            )
             spaces = ifc_file.by_type("IfcSpace")
 
         for space in spaces:
@@ -157,12 +178,14 @@ class IFCParser:
                 ifc_id=str(space.GlobalId),
                 name=getattr(space, "Name", "") or "",
                 long_name=getattr(space, "LongName", "") or "",
-                number=getattr(space, "ObjectPlacement", None) and "" or "",
+                number=str(getattr(space, "Number", "") or ""),
                 floor_name=floor_name,
             )
 
             # Fläche und Höhe aus Quantities
-            room.area_m2, room.perimeter_m, room.height_m = self._get_space_quantities(space)
+            room.area_m2, room.perimeter_m, room.height_m = (
+                self._get_space_quantities(space)
+            )
 
             # Properties
             room.properties = self._get_properties(space)
@@ -176,8 +199,10 @@ class IFCParser:
         walls: list[IFCWall] = []
         try:
             import ifcopenshell.util.element as ifc_util
+
             wall_elements = [
-                el for el in ifc_util.get_decomposition(storey)
+                el
+                for el in ifc_util.get_decomposition(storey)
                 if el.is_a("IfcWall") or el.is_a("IfcWallStandardCase")
             ]
         except Exception:
@@ -199,8 +224,10 @@ class IFCParser:
         doors: list[IFCDoor] = []
         try:
             import ifcopenshell.util.element as ifc_util
+
             door_elements = [
-                el for el in ifc_util.get_decomposition(storey)
+                el
+                for el in ifc_util.get_decomposition(storey)
                 if el.is_a("IfcDoor")
             ]
         except Exception:
@@ -226,8 +253,10 @@ class IFCParser:
         windows: list[IFCWindow] = []
         try:
             import ifcopenshell.util.element as ifc_util
+
             win_elements = [
-                el for el in ifc_util.get_decomposition(storey)
+                el
+                for el in ifc_util.get_decomposition(storey)
                 if el.is_a("IfcWindow")
             ]
         except Exception:
@@ -250,8 +279,10 @@ class IFCParser:
         slabs: list[IFCSlab] = []
         try:
             import ifcopenshell.util.element as ifc_util
+
             slab_elements = [
-                el for el in ifc_util.get_decomposition(storey)
+                el
+                for el in ifc_util.get_decomposition(storey)
                 if el.is_a("IfcSlab")
             ]
         except Exception:
@@ -275,7 +306,9 @@ class IFCParser:
                 name=getattr(space, "Name", "") or "",
                 floor_name="EG",
             )
-            room.area_m2, room.perimeter_m, room.height_m = self._get_space_quantities(space)
+            room.area_m2, room.perimeter_m, room.height_m = (
+                self._get_space_quantities(space)
+            )
             floor.rooms.append(room)
         return [floor]
 
