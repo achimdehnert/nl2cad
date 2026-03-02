@@ -15,6 +15,7 @@ class NLIntent(StrEnum):
     BRANDSCHUTZ = "brandschutz"
     FLUCHTWEG = "fluchtweg"
     NL2DXF = "nl2dxf"
+    ABSTANDSFLAECHEN = "abstandsflaechen"
     UNBEKANNT = "unbekannt"
 
 
@@ -29,7 +30,10 @@ class IntentResult:
 _INTENT_PATTERNS: list[tuple[NLIntent, list[str]]] = [
     (
         NLIntent.RAUMANALYSE,
-        ["raum", "räume", "fläche", "grundriss", "raumliste"],
+        [
+            "raum", "räume", "fläche", "grundriss", "raumliste",
+            "wie viele räume", "raumbuch", "raumgrößen",
+        ],
     ),
     (NLIntent.DIN277, ["din 277", "din277", "nutzungsart", "nuf", "ngf"]),
     (NLIntent.WOFLV, ["woflv", "wohnfläche", "wohnflächenverordnung"]),
@@ -43,12 +47,19 @@ _INTENT_PATTERNS: list[tuple[NLIntent, list[str]]] = [
     ),
     (
         NLIntent.BRANDSCHUTZ,
-        ["brandschutz", "brandabschnitt", "f30", "f60", "f90"],
+        [
+            "brandschutz", "brandabschnitt", "f30", "f60", "f90",
+            "feuerwiderstand", "brandmeldung", "sprinkler",
+        ],
     ),
     (NLIntent.FLUCHTWEG, ["fluchtweg", "rettungsweg", "notausgang", "asr"]),
     (
         NLIntent.NL2DXF,
         ["zeichne", "erstelle", "generiere", "dxf", "cad-befehl"],
+    ),
+    (
+        NLIntent.ABSTANDSFLAECHEN,
+        ["abstandsfläche", "abstand", "baulinie", "bauwich"],
     ),
 ]
 
