@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
@@ -27,7 +28,6 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
     "mypy>=1.10",
-    "ifcopenshell>=0.8.0",
 ]
 
 [project.urls]
@@ -39,15 +39,16 @@ Issues = "https://github.com/achimdehnert/nl2cad/issues"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# PEP 420 Namespace Package — kein __init__.py im nl2cad/ root!
 [tool.hatch.build.targets.wheel]
 packages = ["src/nl2cad"]
-
-[tool.hatch.build.targets.sdist]
-include = ["src/nl2cad"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --tb=short"
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src"]
