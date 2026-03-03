@@ -27,7 +27,13 @@ nl2cad-core  = { workspace = true }
 nl2cad-areas = { workspace = true }
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.4"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "pytest-asyncio>=0.23", "ruff>=0.4", "mypy>=1.10"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+pythonpath = ["src"]
 
 [project.urls]
 Homepage = "https://github.com/achimdehnert/nl2cad"

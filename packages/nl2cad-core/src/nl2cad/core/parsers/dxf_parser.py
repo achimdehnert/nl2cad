@@ -86,11 +86,18 @@ class DXFParser:
         self, content: bytes, filename: str = "upload.dxf"
     ) -> DXFModel:
         """Parst DXF aus Bytes (z.B. Django File Upload)."""
+        import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(suffix=".dxf", delete=False) as tmp:
-            tmp.write(content)
-            return self.parse(tmp.name)
+        tmp_path: str | None = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".dxf", delete=False) as tmp:
+                tmp.write(content)
+                tmp_path = tmp.name
+            return self.parse(tmp_path)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
     # ------------------------------------------------------------------
     # Private Methoden

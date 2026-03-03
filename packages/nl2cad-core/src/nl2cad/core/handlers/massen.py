@@ -72,7 +72,9 @@ class MassenHandler(BaseCADHandler):
     def _from_ifc(self, model: object, result: HandlerResult) -> dict:
         from nl2cad.core.models.ifc import IFCModel
 
-        assert isinstance(model, IFCModel)
+        if not isinstance(model, IFCModel):
+            result.add_error(f"ifc_model ist kein IFCModel: {type(model)}")
+            return {}
 
         rooms = model.rooms
         raumflaeche = sum(r.area_m2 for r in rooms)

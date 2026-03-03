@@ -15,21 +15,24 @@ class GAEBGenerator:
 
     def generate_xml(self, lv: Leistungsverzeichnis) -> BytesIO:
         """Generiert GAEB XML."""
-        root = ET.Element("GAEB", xmlns=self.GAEB_NAMESPACE)
-        hdr = ET.SubElement(root, "GAEBInfo")
-        ET.SubElement(hdr, "Vers").text = "3.2"
-        ET.SubElement(hdr, "PrjInfo").text = lv.projekt_name
+        ns = self.GAEB_NAMESPACE
+        ET.register_namespace("", ns)
+
+        root = ET.Element(f"{{{ns}}}GAEB")
+        hdr = ET.SubElement(root, f"{{{ns}}}GAEBInfo")
+        ET.SubElement(hdr, f"{{{ns}}}Vers").text = "3.2"
+        ET.SubElement(hdr, f"{{{ns}}}PrjInfo").text = lv.projekt_name
         # LV-Struktur
-        lv_el = ET.SubElement(root, "Award")
+        lv_el = ET.SubElement(root, f"{{{ns}}}Award")
         for los in lv.lose:
-            los_el = ET.SubElement(lv_el, "BoQ", id=los.oz)
-            ET.SubElement(los_el, "Descr").text = los.bezeichnung
+            los_el = ET.SubElement(lv_el, f"{{{ns}}}BoQ", id=los.oz)
+            ET.SubElement(los_el, f"{{{ns}}}Descr").text = los.bezeichnung
             for pos in los.positionen:
-                pos_el = ET.SubElement(los_el, "Itemlist")
-                ET.SubElement(pos_el, "Item", RNO=pos.oz)
-                ET.SubElement(pos_el, "T").text = pos.kurztext
-                ET.SubElement(pos_el, "Qty").text = str(pos.menge)
-                ET.SubElement(pos_el, "QU").text = pos.einheit
+                pos_el = ET.SubElement(los_el, f"{{{ns}}}Itemlist")
+                ET.SubElement(pos_el, f"{{{ns}}}Item", RNO=pos.oz)
+                ET.SubElement(pos_el, f"{{{ns}}}T").text = pos.kurztext
+                ET.SubElement(pos_el, f"{{{ns}}}Qty").text = str(pos.menge)
+                ET.SubElement(pos_el, f"{{{ns}}}QU").text = pos.einheit
         output = BytesIO()
         ET.ElementTree(root).write(
             output, encoding="utf-8", xml_declaration=True

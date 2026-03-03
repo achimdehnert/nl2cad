@@ -24,12 +24,16 @@ class LearnedPattern:
 class NLLearningStore:
     """Persistenter JSON-Store für gelernte NL-Patterns."""
 
-    def __init__(self, data_path: Path | None = None) -> None:
+    def __init__(
+        self, data_path: Path | None = None, persist: bool = True
+    ) -> None:
         self.data_path = (
             data_path or Path.home() / ".nl2cad" / "nl_learning.json"
         )
+        self.persist = persist
         self.patterns: list[LearnedPattern] = []
-        self._load()
+        if self.persist:
+            self._load()
 
     def add(
         self,
@@ -70,6 +74,8 @@ class NLLearningStore:
             logger.warning("[NLLearning] Load failed: %s", e)
 
     def _save(self) -> None:
+        if not self.persist:
+            return
         try:
             self.data_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.data_path, "w", encoding="utf-8") as f:

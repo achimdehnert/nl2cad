@@ -1,0 +1,29 @@
+name: Lint
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install workspace
+        run: uv sync --locked --all-extras
+
+      - name: ruff check
+        run: uv run ruff check packages/
+
+      - name: ruff format check
+        run: uv run ruff format --check packages/
+
+      - name: mypy
+        run: uv run mypy packages/nl2cad-core/src packages/nl2cad-areas/src packages/nl2cad-brandschutz/src packages/nl2cad-gaeb/src packages/nl2cad-nlp/src
