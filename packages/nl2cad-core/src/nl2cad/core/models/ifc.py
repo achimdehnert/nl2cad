@@ -38,8 +38,10 @@ class IFCRoom:
     volume_m3: float = 0.0
     floor_name: str = ""
     floor_number: int = 0
+    floor_guid: str = ""  # GlobalId des IfcBuildingStorey
     din277_code: str = ""
     din277_category: str = ""
+    usage_category: str = ""  # DIN 277 usage code (NF1.1, NF2, VF8, ...)
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -50,11 +52,17 @@ class IFCWall:
     ifc_id: str = ""
     name: str = ""
     area_m2: float = 0.0
+    gross_area_m2: float = 0.0
+    net_area_m2: float = 0.0
     length_m: float = 0.0
     height_m: float = 0.0
     thickness_m: float = 0.0
+    volume_m3: float = 0.0
     is_external: bool = False
+    is_load_bearing: bool = False
     fire_rating: str = ""
+    material: str = ""
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -64,11 +72,15 @@ class IFCDoor:
 
     ifc_id: str = ""
     name: str = ""
+    number: str = ""
     width_m: float = 0.0
     height_m: float = 0.0
     fire_rating: str = ""  # T30, T60, T90
     is_fire_door: bool = False
     opening_direction: str = ""
+    door_type: str = ""  # Standard, Brandschutz, ...
+    material: str = ""
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -78,9 +90,13 @@ class IFCWindow:
 
     ifc_id: str = ""
     name: str = ""
+    number: str = ""
     width_m: float = 0.0
     height_m: float = 0.0
     area_m2: float = 0.0
+    material: str = ""
+    u_value_wm2k: float | None = None  # Wärmedurchgangskoeffizient W/(m²K)
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -92,8 +108,12 @@ class IFCSlab:
     name: str = ""
     area_m2: float = 0.0
     thickness_m: float = 0.0
+    volume_m3: float = 0.0
+    perimeter_m: float = 0.0
     fire_rating: str = ""
-    slab_type: str = ""  # FLOOR, ROOF, BASESLAB
+    slab_type: str = "FLOOR"  # FLOOR, ROOF, BASESLAB
+    material: str = ""
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 

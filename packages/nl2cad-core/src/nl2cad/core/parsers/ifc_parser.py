@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 
 from nl2cad.core.exceptions import IFCParseError, UnsupportedFormatError
+from nl2cad.core.constants import ROOM_KEYWORD_TO_DIN277
 from nl2cad.core.models.ifc import (
     IFCDoor,
     IFCFloor,
@@ -173,6 +174,7 @@ class IFCParser:
             )
             spaces = ifc_file.by_type("IfcSpace")
 
+        floor_guid = str(storey.GlobalId)
         for space in spaces:
             room = IFCRoom(
                 ifc_id=str(space.GlobalId),
@@ -180,12 +182,16 @@ class IFCParser:
                 long_name=getattr(space, "LongName", "") or "",
                 number=str(getattr(space, "Number", "") or ""),
                 floor_name=floor_name,
+                floor_guid=floor_guid,
             )
 
             # Fläche und Höhe aus Quantities
-            room.area_m2, room.perimeter_m, room.height_m = (
+            room.area_m2, room.perimeter_m, room.height_m, room.volume_m3 = (
                 self._get_space_quantities(space)
             )
+
+            # DIN 277 usage_category aus Raumname
+            room.usage_category = self._classify_room_usage(room.name)
 
             # Properties
             room.properties = self._get_properties(space)
@@ -208,13 +214,23 @@ class IFCParser:
         except Exception:
             wall_elements = ifc_file.by_type("IfcWall")
 
+        floor_guid = str(storey.GlobalId)
         for w in wall_elements:
             wall = IFCWall(
                 ifc_id=str(w.GlobalId),
                 name=getattr(w, "Name", "") or "",
+                floor_guid=floor_guid,
             )
             wall.properties = self._get_properties(w)
-            wall.fire_rating = wall.properties.get("FireRating", "")  # type: ignore[assignment]
+            wall.fire_rating = str(wall.properties.get("FireRating", "") or "")
+            wall.is_external = bool(wall.properties.get("IsExternal", False))
+            wall.is_load_bearing = bool(wall.properties.get("LoadBearing", False))
+            wall.material = str(wall.properties.get("Material", "") or "")
+            # Quantities
+            (wall.length_m, wall.height_m, wall.thickness_m,
+             wall.gross_area_m2, wall.net_area_m2, wall.volume_m3) = (
+                self._get_wall_quantities(w)
+            )
             walls.append(wall)
 
         return walls
@@ -233,17 +249,22 @@ class IFCParser:
         except Exception:
             door_elements = ifc_file.by_type("IfcDoor")
 
+        floor_guid = str(storey.GlobalId)
         for d in door_elements:
             door = IFCDoor(
                 ifc_id=str(d.GlobalId),
                 name=getattr(d, "Name", "") or "",
+                number=self._get_element_number(d),
                 width_m=getattr(d, "OverallWidth", 0.0) or 0.0,
                 height_m=getattr(d, "OverallHeight", 0.0) or 0.0,
+                floor_guid=floor_guid,
             )
             door.properties = self._get_properties(d)
             fire_rating = door.properties.get("FireRating", "")
             door.fire_rating = str(fire_rating) if fire_rating else ""
             door.is_fire_door = bool(door.fire_rating)
+            door.door_type = "Brandschutz" if door.is_fire_door else "Standard"
+            door.material = str(door.properties.get("Material", "") or "")
             doors.append(door)
 
         return doors
@@ -262,14 +283,25 @@ class IFCParser:
         except Exception:
             win_elements = ifc_file.by_type("IfcWindow")
 
+        floor_guid = str(storey.GlobalId)
         for w in win_elements:
             win = IFCWindow(
                 ifc_id=str(w.GlobalId),
                 name=getattr(w, "Name", "") or "",
+                number=self._get_element_number(w),
                 width_m=getattr(w, "OverallWidth", 0.0) or 0.0,
                 height_m=getattr(w, "OverallHeight", 0.0) or 0.0,
+                floor_guid=floor_guid,
             )
             win.area_m2 = win.width_m * win.height_m
+            win.properties = self._get_properties(w)
+            win.material = str(win.properties.get("Material", "") or "")
+            u_raw = win.properties.get("ThermalTransmittance")
+            if u_raw is not None:
+                try:
+                    win.u_value_wm2k = float(u_raw)
+                except (TypeError, ValueError):
+                    pass
             windows.append(win)
 
         return windows
@@ -288,11 +320,17 @@ class IFCParser:
         except Exception:
             slab_elements = ifc_file.by_type("IfcSlab")
 
+        floor_guid = str(storey.GlobalId)
         for s in slab_elements:
             slab = IFCSlab(
                 ifc_id=str(s.GlobalId),
                 name=getattr(s, "Name", "") or "",
+                floor_guid=floor_guid,
             )
+            slab.properties = self._get_properties(s)
+            slab.material = str(slab.properties.get("Material", "") or "")
+            (slab.area_m2, slab.thickness_m,
+             slab.volume_m3, slab.perimeter_m) = self._get_slab_quantities(s)
             slabs.append(slab)
 
         return slabs
@@ -306,17 +344,19 @@ class IFCParser:
                 name=getattr(space, "Name", "") or "",
                 floor_name="EG",
             )
-            room.area_m2, room.perimeter_m, room.height_m = (
+            room.area_m2, room.perimeter_m, room.height_m, room.volume_m3 = (
                 self._get_space_quantities(space)
             )
+            room.usage_category = self._classify_room_usage(room.name)
             floor.rooms.append(room)
         return [floor]
 
-    def _get_space_quantities(self, space) -> tuple[float, float, float]:
-        """Extrahiert Fläche, Umfang und Höhe aus IfcSpace Quantities."""
+    def _get_space_quantities(self, space) -> tuple[float, float, float, float]:
+        """Extrahiert Fläche, Umfang, Höhe und Volumen aus IfcSpace Quantities."""
         area_m2 = 0.0
         perimeter_m = 0.0
         height_m = 0.0
+        volume_m3 = 0.0
 
         try:
             for rel in space.IsDefinedBy:
@@ -325,16 +365,83 @@ class IFCParser:
                     if prop_set.is_a("IfcElementQuantity"):
                         for q in prop_set.Quantities:
                             name = q.Name.lower() if q.Name else ""
-                            if "area" in name or "fläche" in name:
+                            if "area" in name or "fl\u00e4che" in name:
                                 area_m2 = float(q.AreaValue or 0)
                             elif "perimeter" in name or "umfang" in name:
                                 perimeter_m = float(q.LengthValue or 0)
-                            elif "height" in name or "höhe" in name:
+                            elif "height" in name or "h\u00f6he" in name:
                                 height_m = float(q.LengthValue or 0)
+                            elif "volume" in name or "volumen" in name:
+                                volume_m3 = float(q.VolumeValue or 0)
         except Exception:
             pass
 
-        return area_m2, perimeter_m, height_m
+        return area_m2, perimeter_m, height_m, volume_m3
+
+    def _get_wall_quantities(
+        self, wall
+    ) -> tuple[float, float, float, float, float, float]:
+        """Extrahiert L\u00e4nge, H\u00f6he, Dicke, Bruttofläche, Nettofläche, Volumen."""
+        length_m = height_m = thickness_m = 0.0
+        gross_area_m2 = net_area_m2 = volume_m3 = 0.0
+        try:
+            for rel in wall.IsDefinedBy:
+                if rel.is_a("IfcRelDefinesByProperties"):
+                    prop_set = rel.RelatingPropertyDefinition
+                    if prop_set.is_a("IfcElementQuantity"):
+                        for q in prop_set.Quantities:
+                            name = q.Name.lower() if q.Name else ""
+                            if "length" in name or "l\u00e4nge" in name:
+                                length_m = float(q.LengthValue or 0)
+                            elif "height" in name or "h\u00f6he" in name:
+                                height_m = float(q.LengthValue or 0)
+                            elif "width" in name or "breite" in name or "thickness" in name:
+                                thickness_m = float(q.LengthValue or 0)
+                            elif "grossarea" in name.replace("_", "") or "grossfl" in name:
+                                gross_area_m2 = float(q.AreaValue or 0)
+                            elif "netarea" in name.replace("_", "") or "nettofl" in name:
+                                net_area_m2 = float(q.AreaValue or 0)
+                            elif "volume" in name:
+                                volume_m3 = float(q.VolumeValue or 0)
+        except Exception:
+            pass
+        return length_m, height_m, thickness_m, gross_area_m2, net_area_m2, volume_m3
+
+    def _get_slab_quantities(self, slab) -> tuple[float, float, float, float]:
+        """Extrahiert Fl\u00e4che, Dicke, Volumen, Umfang aus IfcSlab."""
+        area_m2 = thickness_m = volume_m3 = perimeter_m = 0.0
+        try:
+            for rel in slab.IsDefinedBy:
+                if rel.is_a("IfcRelDefinesByProperties"):
+                    prop_set = rel.RelatingPropertyDefinition
+                    if prop_set.is_a("IfcElementQuantity"):
+                        for q in prop_set.Quantities:
+                            name = q.Name.lower() if q.Name else ""
+                            if "area" in name:
+                                area_m2 = float(q.AreaValue or 0)
+                            elif "thickness" in name or "dicke" in name:
+                                thickness_m = float(q.LengthValue or 0)
+                            elif "volume" in name:
+                                volume_m3 = float(q.VolumeValue or 0)
+                            elif "perimeter" in name:
+                                perimeter_m = float(q.LengthValue or 0)
+        except Exception:
+            pass
+        return area_m2, thickness_m, volume_m3, perimeter_m
+
+    def _get_element_number(self, element) -> str:
+        """Extrahiert Element-Nummer aus Name."""
+        name = getattr(element, "Name", "") or ""
+        parts = name.split()
+        return parts[0] if parts else ""
+
+    def _classify_room_usage(self, room_name: str) -> str:
+        """Klassifiziert Raum nach DIN 277 usage_category aus Raumname."""
+        name_lower = room_name.lower()
+        for keyword, code in ROOM_KEYWORD_TO_DIN277.items():
+            if keyword in name_lower:
+                return code
+        return ""
 
     def _get_properties(self, element) -> dict:
         """Extrahiert alle Properties eines IFC-Elements."""
