@@ -38,8 +38,10 @@ class IFCRoom:
     volume_m3: float = 0.0
     floor_name: str = ""
     floor_number: int = 0
+    floor_guid: str = ""  # GlobalId des IfcBuildingStorey
     din277_code: str = ""
     din277_category: str = ""
+    usage_category: str = ""  # DIN 277 usage code (NF1.1, NF2, VF8, ...)
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -50,11 +52,17 @@ class IFCWall:
     ifc_id: str = ""
     name: str = ""
     area_m2: float = 0.0
+    gross_area_m2: float = 0.0
+    net_area_m2: float = 0.0
     length_m: float = 0.0
     height_m: float = 0.0
     thickness_m: float = 0.0
+    volume_m3: float = 0.0
     is_external: bool = False
+    is_load_bearing: bool = False
     fire_rating: str = ""
+    material: str = ""
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -64,11 +72,15 @@ class IFCDoor:
 
     ifc_id: str = ""
     name: str = ""
+    number: str = ""
     width_m: float = 0.0
     height_m: float = 0.0
     fire_rating: str = ""  # T30, T60, T90
     is_fire_door: bool = False
     opening_direction: str = ""
+    door_type: str = ""  # Standard, Brandschutz, ...
+    material: str = ""
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -78,9 +90,13 @@ class IFCWindow:
 
     ifc_id: str = ""
     name: str = ""
+    number: str = ""
     width_m: float = 0.0
     height_m: float = 0.0
     area_m2: float = 0.0
+    material: str = ""
+    u_value_wm2k: float | None = None  # Wärmedurchgangskoeffizient W/(m²K)
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -92,8 +108,12 @@ class IFCSlab:
     name: str = ""
     area_m2: float = 0.0
     thickness_m: float = 0.0
+    volume_m3: float = 0.0
+    perimeter_m: float = 0.0
     fire_rating: str = ""
-    slab_type: str = ""  # FLOOR, ROOF, BASESLAB
+    slab_type: str = "FLOOR"  # FLOOR, ROOF, BASESLAB
+    material: str = ""
+    floor_guid: str = ""
     properties: dict[str, str | float | bool] = field(default_factory=dict)
 
 
@@ -171,7 +191,9 @@ class IFCModel:
                     "perimeter_m": r.perimeter_m,
                     "height_m": r.height_m,
                     "din277_code": r.din277_code,
+                    "usage_category": r.usage_category,
                     "floor_name": r.floor_name,
+                    "floor_guid": r.floor_guid,
                 }
                 for r in self.rooms
             ],
@@ -183,7 +205,10 @@ class IFCModel:
                     "height_m": w.height_m,
                     "thickness_m": w.thickness_m,
                     "is_external": w.is_external,
+                    "is_load_bearing": w.is_load_bearing,
                     "fire_rating": w.fire_rating,
+                    "material": w.material,
+                    "floor_guid": w.floor_guid,
                 }
                 for w in self.walls
             ],
@@ -194,6 +219,9 @@ class IFCModel:
                     "height_m": d.height_m,
                     "fire_rating": d.fire_rating,
                     "is_fire_door": d.is_fire_door,
+                    "door_type": d.door_type,
+                    "material": d.material,
+                    "floor_guid": d.floor_guid,
                 }
                 for d in self.doors
             ],
@@ -203,6 +231,9 @@ class IFCModel:
                     "width_m": w.width_m,
                     "height_m": w.height_m,
                     "area_m2": w.area_m2,
+                    "material": w.material,
+                    "u_value_wm2k": w.u_value_wm2k,
+                    "floor_guid": w.floor_guid,
                 }
                 for w in self.windows
             ],
@@ -213,6 +244,8 @@ class IFCModel:
                     "thickness_m": s.thickness_m,
                     "fire_rating": s.fire_rating,
                     "slab_type": s.slab_type,
+                    "material": s.material,
+                    "floor_guid": s.floor_guid,
                 }
                 for s in self.slabs
             ],
