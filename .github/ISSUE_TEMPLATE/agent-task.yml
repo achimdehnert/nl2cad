@@ -1,0 +1,93 @@
+name: Agent Task
+description: Standardisiertes Task-Format für AI-Agent-Ausführung (ADR-086)
+title: "[Task] "
+labels: ["agent-task"]
+body:
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Task-Typ
+      options:
+        - feature
+        - bugfix
+        - refactor
+        - test
+        - infra
+        - adr
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Komplexität
+      options:
+        - trivial
+        - simple
+        - moderate
+        - complex
+    validations:
+      required: true
+
+  - type: input
+    id: parent_issue
+    attributes:
+      label: Parent Issue
+      placeholder: "#NNN (leer lassen wenn kein Parent)"
+
+  - type: input
+    id: affected_package
+    attributes:
+      label: Betroffenes Package
+      placeholder: "z.B. nl2cad-core, nl2cad-gaeb, nl2cad-nlp"
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected_paths
+    attributes:
+      label: Affected Paths (ScopeLock)
+      description: Welche Pfade darf der Agent ändern? (ADR-081 Scope-Lock)
+      placeholder: |
+        - packages/nl2cad-core/src/nl2cad/core/
+        - packages/nl2cad-core/tests/
+    validations:
+      required: true
+
+  - type: textarea
+    id: forbidden_paths
+    attributes:
+      label: Forbidden Paths
+      description: Explizit verbotene Pfade (zusätzlich zu den Platform-Defaults)
+      placeholder: |
+        - (leer lassen wenn keine zusätzlichen)
+      value: |
+        - (keine zusätzlichen — Platform-Defaults gelten immer)
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Was muss erfüllt sein damit der Task als Done gilt?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_requirements
+    attributes:
+      label: Test Requirements
+      placeholder: |
+        - [ ] test_should_... in tests/test_....py
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Andere Issues die erst fertig sein müssen
+      placeholder: "#NNN, #MMM (leer lassen wenn keine)"
+      value: "keine"
