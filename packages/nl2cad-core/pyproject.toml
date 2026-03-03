@@ -45,3 +45,9 @@ packages = ["src/nl2cad"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/nl2cad"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+pythonpath = ["src"]
