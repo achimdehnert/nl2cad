@@ -4,13 +4,18 @@
 # Based on: platform/scripts/publish-monorepo.sh
 # =============================================================================
 #
+# KEY FEATURE: --set-version bumps pyproject.toml automatically from tag.
+# You NEVER need to manually edit pyproject.toml before publishing.
+#
 # USAGE:
-#   bash scripts/publish.sh                            # all packages incl. meta
-#   bash scripts/publish.sh --only nl2cad-core         # single package
-#   bash scripts/publish.sh --only iil-nl2cadfw        # meta-package only
-#   bash scripts/publish.sh --dry-run                  # build only, no upload
-#   bash scripts/publish.sh --test                     # upload to TestPyPI
-#   PYPI_TOKEN=pypi-xxx bash scripts/publish.sh        # non-interactive (CI)
+#   bash scripts/publish.sh                              # all packages
+#   bash scripts/publish.sh --only nl2cad-core           # single sub-package
+#   bash scripts/publish.sh --only iil-nl2cadfw          # meta-package only
+#   bash scripts/publish.sh --set-version 0.2.0          # auto-bump + publish all
+#   bash scripts/publish.sh --only nl2cad-core --set-version 0.2.0
+#   bash scripts/publish.sh --dry-run                    # build only, no upload
+#   bash scripts/publish.sh --test                       # upload to TestPyPI
+#   PYPI_TOKEN=pypi-xxx bash scripts/publish.sh          # non-interactive (CI)
 #
 # TOKEN: never pass as CLI argument — use env var or interactive prompt.
 # =============================================================================
@@ -26,18 +31,25 @@ err()    { echo -e "${_RED}[publish] ✗${_RESET} $*" >&2; exit 1; }
 info()   { echo -e "${_CYAN}[publish]  $*${_RESET}"; }
 header() { echo -e "\n${_BOLD}[publish] ══ $* ══${_RESET}"; }
 
-# ── nl2cad packages (sub-packages + meta-package) ────────────────────────────
+# ── nl2cad packages ───────────────────────────────────────────────────────────
 DEFAULT_PACKAGES=(nl2cad-core nl2cad-areas nl2cad-brandschutz nl2cad-gaeb nl2cad-nlp iil-nl2cadfw)
+# iil-nl2cadfw lives in repo root (not packages/ subdir)
+ROOT_PACKAGES="iil-nl2cadfw"
 
-# ── Argument parsing ─────────────────────────────────────────────────────────
+# ── Argument parsing ──────────────────────────────────────────────────────────
 TEST_PYPI=false
 DRY_RUN=false
 ONLY_PACKAGES=""
+SET_VERSION=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --test)    TEST_PYPI=true;  shift ;;
         --dry-run) DRY_RUN=true;    shift ;;
+        --set-version)
+            [[ -z "${2:-}" ]] && err "--set-version requires a version argument (e.g. 0.2.0)"
+            SET_VERSION="$2"; shift 2 ;;
+        --set-version=*) SET_VERSION="${1#--set-version=}"; shift ;;
         --only)
             [[ -z "${2:-}" ]] && err "--only requires a comma-separated package list"
             ONLY_PACKAGES="$2"; shift 2 ;;
@@ -53,14 +65,14 @@ else
     PACKAGES=("${DEFAULT_PACKAGES[@]}")
 fi
 
-# ── Repo root ────────────────────────────────────────────────────────────────
+# ── Repo root ─────────────────────────────────────────────────────────────────
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT"
 
-# ── uv check ─────────────────────────────────────────────────────────────────
+# ── uv check ──────────────────────────────────────────────────────────────────
 command -v uv &>/dev/null || err "'uv' not found. Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
-# ── Token — secure read only (no CLI arg, no history leakage) ────────────────
+# ── Token ─────────────────────────────────────────────────────────────────────
 if ! $DRY_RUN; then
     if [[ -z "${PYPI_TOKEN:-}" ]]; then
         $TEST_PYPI \
@@ -72,14 +84,15 @@ if ! $DRY_RUN; then
     [[ "$PYPI_TOKEN" == pypi-* ]] || warn "Token does not start with 'pypi-' — double-check format"
 fi
 
-# ── Header ───────────────────────────────────────────────────────────────────
+# ── Header ────────────────────────────────────────────────────────────────────
 header "nl2cad publish"
 info "Packages : ${PACKAGES[*]}"
 info "uv       : $(uv --version 2>&1 | head -1)"
+[[ -n "$SET_VERSION" ]] && info "Version  : $SET_VERSION (auto-set from --set-version)"
 $TEST_PYPI && info "Target   : TestPyPI" || info "Target   : PyPI (production)"
 $DRY_RUN   && warn  "DRY-RUN — build only, no upload"
 
-# ── Git state ────────────────────────────────────────────────────────────────
+# ── Git state ─────────────────────────────────────────────────────────────────
 header "Git state"
 if git rev-parse --git-dir &>/dev/null; then
     DIRTY="$(git status --porcelain | wc -l | tr -d ' ')"
@@ -89,7 +102,20 @@ if git rev-parse --git-dir &>/dev/null; then
         || ok "Working tree clean"
 fi
 
-# ── Build ────────────────────────────────────────────────────────────────────
+# ── Version bump (if requested) ───────────────────────────────────────────────
+if [[ -n "$SET_VERSION" ]]; then
+    header "Version bump → $SET_VERSION"
+    for pkg in "${PACKAGES[@]}"; do
+        if echo ",$ROOT_PACKAGES," | grep -q ",$pkg,"; then
+            uv version "$SET_VERSION"
+        else
+            uv version --package "$pkg" "$SET_VERSION"
+        fi
+        ok "Set $pkg → $SET_VERSION"
+    done
+fi
+
+# ── Build ─────────────────────────────────────────────────────────────────────
 header "Build"
 rm -rf dist/
 mkdir -p dist/
@@ -104,7 +130,7 @@ ARTIFACT_COUNT="$(ls dist/*.whl dist/*.tar.gz 2>/dev/null | wc -l | tr -d ' ')"
 ok "$ARTIFACT_COUNT artifact(s) in dist/"
 ls dist/ | sed 's/^/    /'
 
-# ── Upload ───────────────────────────────────────────────────────────────────
+# ── Upload ────────────────────────────────────────────────────────────────────
 header "Upload"
 if $DRY_RUN; then
     warn "DRY-RUN — skipping upload"
@@ -119,7 +145,7 @@ else
     ok "Published to PyPI"
 fi
 
-# ── Summary ──────────────────────────────────────────────────────────────────
+# ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${_BOLD}[publish] ══ Done ══${_RESET}"
 for pkg in "${PACKAGES[@]}"; do
