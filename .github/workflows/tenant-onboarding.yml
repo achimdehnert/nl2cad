@@ -1,0 +1,192 @@
+# .github/workflows/tenant-onboarding.yml
+# Tenant-Onboarding nach Freigabe durch Kunden
+# Trigger: manuell (workflow_dispatch) mit Tenant-Konfiguration
+# Auslöser: Konfigurator Stufe 3 → POST devhub.iil.pet → Admin löst diesen Workflow aus
+
+name: Tenant Onboarding
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant_id:
+        description: "Tenant-ID (URL-Slug, z.B. baufirma-mueller)"
+        required: true
+        type: string
+      tenant_name:
+        description: "Firmenname (z.B. Baufirma Müller GmbH)"
+        required: true
+        type: string
+      contact_email:
+        description: "Kontakt-E-Mail des Kunden"
+        required: true
+        type: string
+      branch:
+        description: "Branche (wohnbau|gewerbebau|industrie|gutachten|nachhaltigkeit|digital|full)"
+        required: true
+        type: choice
+        options:
+          - wohnbau
+          - gewerbebau
+          - industrie
+          - gutachten
+          - nachhaltigkeit
+          - digital
+          - full
+          - sonstige
+      enabled_packages:
+        description: "Komma-getrennte Module (z.B. core,areas,brandschutz)"
+        required: true
+        type: string
+      monthly_eur:
+        description: "Monatlicher Betrag in EUR (netto)"
+        required: true
+        type: string
+      approved_by:
+        description: "Admin der die Freigabe erteilt hat"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  onboard-tenant:
+    name: Tenant einrichten — ${{ inputs.tenant_id }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Tenant-Konfiguration generieren
+        id: generate-config
+        run: |
+          TENANT_DIR="tenants/${{ inputs.tenant_id }}"
+          mkdir -p "${TENANT_DIR}"
+
+          # tenant_config.py generieren
+          cat > "${TENANT_DIR}/tenant_config.py" << 'PYEOF'
+          # tenant_config.py — generiert von nl2cad Tenant-Onboarding Workflow
+          # Tenant: ${{ inputs.tenant_name }}
+          # Erstellt: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          # Freigabe durch: ${{ inputs.approved_by }}
+
+          from dataclasses import dataclass, field
+          from pathlib import Path
+
+
+          @dataclass
+          class TenantConfig:
+              tenant_id: str = "${{ inputs.tenant_id }}"
+              name: str = "${{ inputs.tenant_name }}"
+              contact_email: str = "${{ inputs.contact_email }}"
+              branch: str = "${{ inputs.branch }}"
+              data_root: Path = Path("/data/tenants/${{ inputs.tenant_id }}")
+              enabled_packages: list[str] = field(
+                  default_factory=lambda: "${{ inputs.enabled_packages }}".split(",")
+              )
+              monthly_eur: float = ${{ inputs.monthly_eur }}
+              onboarded_at: str = "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+              @property
+              def nl_patterns_path(self) -> Path:
+                  return self.data_root / "nl_patterns.json"
+
+
+          config = TenantConfig()
+          PYEOF
+
+          # tenant.json Metadaten
+          cat > "${TENANT_DIR}/tenant.json" << JSONEOF
+          {
+            "tenant_id": "${{ inputs.tenant_id }}",
+            "tenant_name": "${{ inputs.tenant_name }}",
+            "contact_email": "${{ inputs.contact_email }}",
+            "branch": "${{ inputs.branch }}",
+            "enabled_packages": "${{ inputs.enabled_packages }}",
+            "monthly_eur": ${{ inputs.monthly_eur }},
+            "approved_by": "${{ inputs.approved_by }}",
+            "onboarded_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "status": "active",
+            "landing_url": "https://achimdehnert.github.io/nl2cad/?tenant=${{ inputs.tenant_id }}"
+          }
+          JSONEOF
+
+          echo "tenant_dir=${TENANT_DIR}" >> "$GITHUB_OUTPUT"
+          echo "landing_url=https://achimdehnert.github.io/nl2cad/?tenant=${{ inputs.tenant_id }}" >> "$GITHUB_OUTPUT"
+
+      - name: Tenant-Dateien committen
+        run: |
+          git config user.name "nl2cad Onboarding Bot"
+          git config user.email "bot@iil.pet"
+          git add tenants/${{ inputs.tenant_id }}/
+          git commit -m "feat(tenant): Onboarding ${{ inputs.tenant_id }} — ${{ inputs.tenant_name }}
+
+          Tenant-ID:  ${{ inputs.tenant_id }}
+          Branche:    ${{ inputs.branch }}
+          Module:     ${{ inputs.enabled_packages }}
+          Monatlich:  ${{ inputs.monthly_eur }} EUR
+          Freigabe:   ${{ inputs.approved_by }}
+          Kontakt:    ${{ inputs.contact_email }}"
+          git push origin main
+
+      - name: GitHub Issue als Aufgabe anlegen
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packages = "${{ inputs.enabled_packages }}".split(",");
+            const issueBody = [
+              "## Tenant-Onboarding: ${{ inputs.tenant_name }}",
+              "",
+              "| Feld | Wert |",
+              "|------|------|",
+              "| **Tenant-ID** | `${{ inputs.tenant_id }}` |",
+              "| **Firma** | ${{ inputs.tenant_name }} |",
+              "| **Kontakt** | ${{ inputs.contact_email }} |",
+              "| **Branche** | ${{ inputs.branch }} |",
+              "| **Module** | `" + packages.join("`, `") + "` |",
+              "| **Monatlich** | ${{ inputs.monthly_eur }} € |",
+              "| **Freigabe** | ${{ inputs.approved_by }} |",
+              "| **Landing-URL** | https://achimdehnert.github.io/nl2cad/?tenant=${{ inputs.tenant_id }} |",
+              "",
+              "## Checkliste Admin",
+              "",
+              "- [ ] Zugang auf devhub.iil.pet anlegen",
+              "- [ ] Willkommens-E-Mail an ${{ inputs.contact_email }} senden",
+              "- [ ] `tenants/${{ inputs.tenant_id }}/tenant.json` → Status `active` bestätigen",
+              "- [ ] Initiale IFC-Test-Datei für Tenant bereitstellen",
+              "",
+              "## Implementierungs-Workflows",
+              "",
+              packages.map(p => {
+                const wfMap = {
+                  "brandschutz": ".windsurf/workflows/task-01-core-handlers.md",
+                  "gaeb":        ".windsurf/workflows/task-02-gaeb-tests.md",
+                  "nlp":         ".windsurf/workflows/task-03-nlp-nl2dxf.md",
+                };
+                return wfMap[p] ? `- [\`${p}\`](${wfMap[p]})` : `- \`${p}\` (stable)`;
+              }).join("\n"),
+            ].join("\n");
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Tenant] Onboarding: ${{ inputs.tenant_name }} (${{ inputs.tenant_id }})`,
+              body: issueBody,
+              labels: ["tenant-onboarding"],
+            });
+
+      - name: Zusammenfassung
+        run: |
+          echo "## ✅ Tenant erfolgreich angelegt" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|--|--|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tenant-ID** | \`${{ inputs.tenant_id }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Firma** | ${{ inputs.tenant_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Module** | \`${{ inputs.enabled_packages }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Landing-URL** | https://achimdehnert.github.io/nl2cad/?tenant=${{ inputs.tenant_id }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Tenant-Konfiguration: \`tenants/${{ inputs.tenant_id }}/\`" >> $GITHUB_STEP_SUMMARY
+          echo "📋 GitHub Issue wurde zur Admin-Checkliste angelegt." >> $GITHUB_STEP_SUMMARY

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "currency": "EUR",
   "discount_threshold": 3,
   "discount_percent": 15,
@@ -11,7 +11,7 @@
       "icon": "🏗️",
       "color": "#2563eb",
       "tagline": "IFC/DXF-Parser, Dataclasses, Handler-Pipeline",
-      "description": "Grundlage aller nl2cad-Packages. IFC (IFC2X3, IFC4, IFC4X3) und DXF-Parser, typsichere Dataclasses (IFCRoom, IFCWall, DXFModel), erweiterbare Handler-Pipeline (Chain of Responsibility), Qualitätsprüfung.",
+      "description": "Grundlage aller nl2cad-Packages. IFC (IFC2X3, IFC4, IFC4X3) und DXF-Parser, typsichere Dataclasses, erweiterbare Handler-Pipeline (Chain of Responsibility), Qualitätsprüfung.",
       "features": [
         "IFC2X3 / IFC4 / IFC4X3 Parser",
         "DXF Parser (R2004–R2018)",
@@ -22,12 +22,11 @@
       ],
       "deps": ["ifcopenshell", "ezdxf"],
       "required": true,
-      "pricing": {
-        "setup_eur": 0,
-        "monthly_eur": 0,
-        "label": "Inklusive (Basis)"
-      },
-      "pypi": "https://pypi.org/project/nl2cad-core/"
+      "pricing": { "setup_eur": 0, "monthly_eur": 0, "label": "Inklusive (Basis)" },
+      "pypi": "https://pypi.org/project/nl2cad-core/",
+      "status": "stable",
+      "adr": null,
+      "workflow": null
     },
     {
       "id": "areas",
@@ -46,12 +45,11 @@
       ],
       "deps": ["nl2cad-core"],
       "required": false,
-      "pricing": {
-        "setup_eur": 0,
-        "monthly_eur": 49,
-        "label": "49 € / Monat"
-      },
-      "pypi": "https://pypi.org/project/nl2cad-areas/"
+      "pricing": { "setup_eur": 0, "monthly_eur": 49, "label": "49 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-areas/",
+      "status": "stable",
+      "adr": null,
+      "workflow": null
     },
     {
       "id": "brandschutz",
@@ -60,7 +58,7 @@
       "icon": "🔥",
       "color": "#dc2626",
       "tagline": "Fluchtweg-Prüfung, ASR A2.3, DIN 4102, EN 13501",
-      "description": "Automatische Brandschutz-Analyse aus IFC/DXF: Fluchtweg-Längen nach ASR A2.3, Feuerwiderstandsklassen (F30–F180, REI/EI), Brandabschnitts-Erkennung, Mängelprotokoll mit Schweregrad.",
+      "description": "Automatische Brandschutz-Analyse aus IFC/DXF: Fluchtweg-Längen nach ASR A2.3, Feuerwiderstandsklassen (F30–F180, REI/EI), Brandabschnitts-Erkennung, Mängelprotokoll.",
       "features": [
         "Fluchtweg-Analyse (ASR A2.3)",
         "Feuerwiderstandsklassen DIN 4102",
@@ -71,12 +69,11 @@
       ],
       "deps": ["nl2cad-core", "nl2cad-areas"],
       "required": false,
-      "pricing": {
-        "setup_eur": 0,
-        "monthly_eur": 79,
-        "label": "79 € / Monat"
-      },
-      "pypi": "https://pypi.org/project/nl2cad-brandschutz/"
+      "pricing": { "setup_eur": 0, "monthly_eur": 79, "label": "79 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-brandschutz/",
+      "status": "stable",
+      "adr": "docs/adr/ADR-001-brandschutz-explosionsschutz-package.md",
+      "workflow": ".windsurf/workflows/task-01-core-handlers.md"
     },
     {
       "id": "gaeb",
@@ -85,7 +82,7 @@
       "icon": "📋",
       "color": "#f59e0b",
       "tagline": "GAEB-Datenaustausch direkt aus IFC-Modellen",
-      "description": "Vollständiger GAEB-Datenaustausch (X81 Ausschreibung bis X85 Abrechnung) aus IFC-Modellen. XML-Export normkonform, Excel-Ausgabe via openpyxl, IFC→X83 Converter für Angebote mit Mengen und Preisen.",
+      "description": "Vollständiger GAEB-Datenaustausch (X81–X85) aus IFC-Modellen. XML-Export normkonform, Excel-Ausgabe, IFC→X83 Converter für Angebote mit Mengen und Preisen.",
       "features": [
         "GAEB X81 / X82 / X83 / X84 / X85",
         "IFC → X83 Converter",
@@ -96,12 +93,11 @@
       ],
       "deps": ["nl2cad-core", "openpyxl"],
       "required": false,
-      "pricing": {
-        "setup_eur": 0,
-        "monthly_eur": 89,
-        "label": "89 € / Monat"
-      },
-      "pypi": "https://pypi.org/project/nl2cad-gaeb/"
+      "pricing": { "setup_eur": 0, "monthly_eur": 89, "label": "89 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-gaeb/",
+      "status": "stable",
+      "adr": null,
+      "workflow": ".windsurf/workflows/task-02-gaeb-tests.md"
     },
     {
       "id": "nlp",
@@ -110,7 +106,7 @@
       "icon": "🧠",
       "color": "#7c3aed",
       "tagline": "Intent-Klassifikation, NL2DXF, lernender Pattern-Store",
-      "description": "Natürlichsprachliche BIM-Queries auf Intents mappen (Raumanalyse, DIN277, GAEB, Brandschutz ...). NL2DXF Generator konvertiert Textbeschreibungen in DXF-Befehle (Regex-Fallback + LLM). Lernender JSON-Store pro Tenant.",
+      "description": "Natürlichsprachliche BIM-Queries auf Intents mappen. NL2DXF Generator konvertiert Textbeschreibungen in DXF-Befehle (Regex-Fallback + LLM). Lernender JSON-Store pro Tenant.",
       "features": [
         "Intent-Klassifikation (10 Intents)",
         "NL2DXF Generator (Regex + LLM)",
@@ -121,32 +117,164 @@
       ],
       "deps": ["nl2cad-core", "pydantic", "httpx"],
       "required": false,
-      "pricing": {
-        "setup_eur": 199,
-        "monthly_eur": 149,
-        "label": "199 € Setup + 149 € / Monat"
-      },
-      "pypi": "https://pypi.org/project/nl2cad-nlp/"
+      "pricing": { "setup_eur": 199, "monthly_eur": 149, "label": "199 € Setup + 149 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-nlp/",
+      "status": "stable",
+      "adr": null,
+      "workflow": ".windsurf/workflows/task-03-nlp-nl2dxf.md"
+    },
+    {
+      "id": "explosionsschutz",
+      "package": "nl2cad-explosionsschutz",
+      "name": "Explosionsschutz (ATEX/BetrSichV)",
+      "icon": "💥",
+      "color": "#f97316",
+      "tagline": "Ex-Zonen, ATEX-Klassifikation, BetrSichV-Prüfung aus IFC",
+      "description": "Automatische Ex-Zonen-Erkennung (Zone 0/1/2, Zone 20/21/22) aus IFC-Modellen. ATEX-Richtlinien 2014/34/EU, BetrSichV §6. Geräte-Kategorisierung, Zonenpläne als DXF-Export. ESD-Generator (Pflichtdokument nach BetrSichV §6 Abs.9). Bußgeld bis 30.000 € bei fehlendem ESD.",
+      "features": [
+        "Ex-Zonen 0/1/2 + 20/21/22",
+        "ATEX 2014/34/EU Klassifikation",
+        "BetrSichV §6 ESD-Generator",
+        "Geräte-Kategorisierung (1G/2G/3G)",
+        "DXF-Zonenplan-Export",
+        "Explosionsschutzdokument (ESD)"
+      ],
+      "deps": ["nl2cad-core", "nl2cad-areas", "nl2cad-brandschutz"],
+      "required": false,
+      "pricing": { "setup_eur": 299, "monthly_eur": 149, "label": "299 € Setup + 149 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-explosionsschutz/",
+      "status": "planned",
+      "adr": "docs/adr/ADR-001-brandschutz-explosionsschutz-package.md",
+      "workflow": ".windsurf/workflows/new-module.md",
+      "adr_section": "UC-05"
+    },
+    {
+      "id": "schallschutz",
+      "package": "nl2cad-schallschutz",
+      "name": "Schallschutz (DIN 4109)",
+      "icon": "🔇",
+      "color": "#0891b2",
+      "tagline": "Schallschutznachweis nach DIN 4109 aus IFC-Modellen",
+      "description": "Automatische Schallschutz-Bewertung aus IFC: Luft- und Trittschall-Berechnung nach DIN 4109 (2018), Anforderungsklassen I–IV, Bauteilkatalog mit Schalldämm-Maßen, Mängelprotokoll und Nachweisführung.",
+      "features": [
+        "DIN 4109 (2018) vollständig",
+        "Luftschall Rw / R'w Berechnung",
+        "Trittschall Ln / L'n Berechnung",
+        "Anforderungsklassen I–IV",
+        "Bauteilkatalog (IFC-Materialien)",
+        "Schallschutznachweis-Export"
+      ],
+      "deps": ["nl2cad-core", "nl2cad-areas"],
+      "required": false,
+      "pricing": { "setup_eur": 0, "monthly_eur": 69, "label": "69 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-schallschutz/",
+      "status": "planned",
+      "adr": "docs/adr/ADR-006-schallschutz-package.md",
+      "workflow": ".windsurf/workflows/new-module.md"
+    },
+    {
+      "id": "barrierefreiheit",
+      "package": "nl2cad-barrierefreiheit",
+      "name": "Barrierefreiheit (DIN 18040)",
+      "icon": "♿",
+      "color": "#2563eb",
+      "tagline": "Barrierefreiheits-Prüfung nach DIN 18040-1/2 aus IFC",
+      "description": "Vollautomatische Prüfung der Barrierefreiheit nach DIN 18040 Teil 1 (öffentliche Gebäude) und Teil 2 (Wohnungen). Türbreiten, Wendekreise, Rampenneigungen, Bewegungsflächen, Sanitärausstattung.",
+      "features": [
+        "DIN 18040-1 (öffentl. Gebäude)",
+        "DIN 18040-2 (Wohnungen, R-Standard)",
+        "Türbreiten / Wendekreise",
+        "Rampenneigung / Stufenfreiheit",
+        "Sanitär-Ausstattungsprüfung",
+        "Mängelprotokoll + Maßnahmen"
+      ],
+      "deps": ["nl2cad-core", "nl2cad-areas"],
+      "required": false,
+      "pricing": { "setup_eur": 0, "monthly_eur": 59, "label": "59 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-barrierefreiheit/",
+      "status": "planned",
+      "adr": "docs/adr/ADR-003-barrierefreiheit-package.md",
+      "workflow": ".windsurf/workflows/new-module.md"
+    },
+    {
+      "id": "energie",
+      "package": "nl2cad-energie",
+      "name": "Energieausweis & GEG",
+      "icon": "⚡",
+      "color": "#16a34a",
+      "tagline": "GEG-Nachweise, Energieausweis, U-Wert-Berechnung aus IFC",
+      "description": "Energetische Bewertung aus IFC-Modellen nach GEG 2024: U-Wert-Berechnung aus IFC-Materialien, Heizwärmebedarf (Monatsbilanzverfahren), Primärenergiebedarf, Energieausweis-Kennwerte. Basis für DGNB/BNB.",
+      "features": [
+        "GEG 2024 konform",
+        "U-Wert aus IFC-Materialien",
+        "Heizwärmebedarf (DIN V 18599)",
+        "Primärenergiebedarf",
+        "Energieausweis-Kennwerte (A+–H)",
+        "DGNB/BNB Datenbasis"
+      ],
+      "deps": ["nl2cad-core", "nl2cad-areas"],
+      "required": false,
+      "pricing": { "setup_eur": 99, "monthly_eur": 89, "label": "99 € Setup + 89 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-energie/",
+      "status": "planned",
+      "adr": "docs/adr/ADR-007-energie-geg-package.md",
+      "workflow": ".windsurf/workflows/new-module.md"
+    },
+    {
+      "id": "entwaesserung",
+      "package": "nl2cad-entwaesserung",
+      "name": "Entwässerungsplanung (DIN EN 752)",
+      "icon": "💧",
+      "color": "#0284c7",
+      "tagline": "Entwässerungsplanung, Kanalhydraulik, DIN EN 752 aus IFC/DXF",
+      "description": "Entwässerungsplanung aus IFC/DXF-Modellen: Einzugsgebiets-Berechnung, hydraulische Bemessung nach DIN EN 752, Regenwasser-Bewirtschaftung, Retentionsvolumen, DXF-Lageplanausgabe.",
+      "features": [
+        "DIN EN 752 Kanalhydraulik",
+        "Einzugsgebiets-Berechnung",
+        "Regenspende (KOSTRA-DWD)",
+        "Retentionsvolumen / RWB",
+        "Schmutz- / Regenwassertrennung",
+        "DXF Lageplan-Export"
+      ],
+      "deps": ["nl2cad-core"],
+      "required": false,
+      "pricing": { "setup_eur": 199, "monthly_eur": 99, "label": "199 € Setup + 99 € / Monat" },
+      "pypi": "https://pypi.org/project/nl2cad-entwaesserung/",
+      "status": "planned",
+      "adr": "docs/adr/ADR-008-entwaesserung-package.md",
+      "workflow": ".windsurf/workflows/new-module.md"
     }
   ],
   "branches": [
     {
       "id": "wohnbau",
       "label": "Wohnungsbau",
-      "recommended_modules": ["core", "areas"],
-      "description": "Typisch für Wohnbauprojekte: IFC-Parser + WoFlV/DIN 277"
+      "recommended_modules": ["core", "areas", "barrierefreiheit", "schallschutz"],
+      "description": "DIN 277, WoFlV, Schallschutz DIN 4109, Barrierefreiheit DIN 18040-2"
     },
     {
       "id": "gewerbebau",
       "label": "Gewerbebau / Büro",
-      "recommended_modules": ["core", "areas", "brandschutz", "gaeb"],
-      "description": "Vollständig für gewerbliche Bauten: DIN 277 + Brandschutz + GAEB-Ausschreibung"
+      "recommended_modules": ["core", "areas", "brandschutz", "gaeb", "barrierefreiheit"],
+      "description": "DIN 277 + Brandschutz + GAEB-Ausschreibung + Barrierefreiheit"
+    },
+    {
+      "id": "industrie",
+      "label": "Industrie / Chemie",
+      "recommended_modules": ["core", "areas", "brandschutz", "explosionsschutz", "gaeb"],
+      "description": "Industrie- und Chemieanlagen: Brandschutz + ATEX/BetrSichV + GAEB"
     },
     {
       "id": "gutachten",
       "label": "Gutachten / Sachverständige",
-      "recommended_modules": ["core", "areas", "brandschutz"],
-      "description": "Brandschutz-Gutachten, WoFlV-Überprüfung, IFC-Qualitätsprüfung"
+      "recommended_modules": ["core", "areas", "brandschutz", "schallschutz"],
+      "description": "Brandschutz-Gutachten, WoFlV-Überprüfung, Schallschutznachweis"
+    },
+    {
+      "id": "nachhaltigkeit",
+      "label": "Nachhaltigkeit / DGNB",
+      "recommended_modules": ["core", "areas", "energie", "barrierefreiheit", "entwaesserung"],
+      "description": "Energieausweis (GEG 2024), Barrierefreiheit, Entwässerung — Basis für DGNB/BNB"
     },
     {
       "id": "digital",
@@ -157,7 +285,7 @@
     {
       "id": "full",
       "label": "Komplett-Suite",
-      "recommended_modules": ["core", "areas", "brandschutz", "gaeb", "nlp"],
+      "recommended_modules": ["core", "areas", "brandschutz", "gaeb", "nlp", "explosionsschutz", "schallschutz", "barrierefreiheit", "energie", "entwaesserung"],
       "description": "Alle Module, maximale Funktionalität"
     }
   ]

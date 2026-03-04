@@ -161,6 +161,12 @@
       border-radius: 4px; color: var(--text-dim);
     }
     .module-card.selected .feat-chip { border-color: rgba(37,99,235,0.3); color: var(--text-muted); }
+    .status-planned {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px; margin-left: 6px;
+      background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35);
+      color: var(--warning); vertical-align: middle; letter-spacing: 0.03em;
+    }
 
     /* ── PRICE SIDEBAR ── */
     .price-sidebar {
@@ -400,7 +406,9 @@
               <option value="">Bitte wählen…</option>
               <option value="wohnbau">Wohnungsbau</option>
               <option value="gewerbebau">Gewerbebau / Büro</option>
+              <option value="industrie">Industrie / Chemie</option>
               <option value="gutachten">Gutachten / Sachverständige</option>
+              <option value="nachhaltigkeit">Nachhaltigkeit / DGNB</option>
               <option value="digital">Digitales Bauen / KI</option>
               <option value="sonstige">Sonstige</option>
             </select>
@@ -488,34 +496,44 @@
   ══════════════════════════════════════════ -->
   <div class="stage" id="stage-3">
     <div class="onboarding-layout">
-      <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
-      <h2>Tenant wird aktiviert</h2>
-      <p id="onboarding-intro">Deine Konfiguration wird an <strong>devhub.iil.pet</strong> übermittelt und ein Admin richtet deinen Tenant ein.</p>
+      <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+      <h2>Konfiguration beauftragen</h2>
+      <p>Dein Implementierungsvorschlag wird per E-Mail an dich und das nl2cad-Team gesendet.<br>
+      <strong>Du erhältst einen Freigabe-Link</strong> — erst nach deiner Bestätigung wird der Tenant angelegt.</p>
 
       <div class="tenant-url-box" id="onboarding-url"></div>
 
+      <!-- Prozess-Übersicht -->
       <div class="status-card">
+        <div class="status-row">
+          <div class="status-icon">�</div>
+          <div class="status-text">
+            <h4>Angebotsmail an dich &amp; Admin</h4>
+            <p id="email-to-label">Konfiguration + Preisübersicht per E-Mail</p>
+          </div>
+          <div class="status-badge"><span id="badge-email" class="badge-pending">Ausstehend</span></div>
+        </div>
+        <div class="status-row">
+          <div class="status-icon">✅</div>
+          <div class="status-text">
+            <h4>Freigabe durch dich</h4>
+            <p>Du bestätigst per Klick auf den Freigabe-Link in der E-Mail</p>
+          </div>
+          <div class="status-badge"><span class="badge-action">Deine Aktion</span></div>
+        </div>
         <div class="status-row">
           <div class="status-icon">📡</div>
           <div class="status-text">
-            <h4>Konfiguration übermitteln</h4>
-            <p>POST → devhub.iil.pet/api/tenants/create</p>
+            <h4>Automatische Übermittlung</h4>
+            <p>Nach Freigabe: POST → devhub.iil.pet/api/tenants/create</p>
           </div>
-          <div class="status-badge"><span id="badge-post" class="badge-pending">Ausstehend</span></div>
-        </div>
-        <div class="status-row">
-          <div class="status-icon">📧</div>
-          <div class="status-text">
-            <h4>Bestätigungs-E-Mail</h4>
-            <p id="email-to-label">Wird an Admin + dich gesendet</p>
-          </div>
-          <div class="status-badge"><span id="badge-email" class="badge-pending">Ausstehend</span></div>
+          <div class="status-badge"><span id="badge-post" class="badge-pending">Nach Freigabe</span></div>
         </div>
         <div class="status-row">
           <div class="status-icon">🏢</div>
           <div class="status-text">
             <h4>Tenant-Account anlegen</h4>
-            <p>Admin richtet Zugang auf devhub.iil.pet ein</p>
+            <p>Admin richtet Zugang auf devhub.iil.pet ein (max. 1 Werktag)</p>
           </div>
           <div class="status-badge"><span class="badge-action">Admin-Aufgabe</span></div>
         </div>
@@ -523,23 +541,33 @@
 
       <div class="onboarding-actions">
         <button class="btn-primary" id="btn-activate" onclick="activateTenant()">
-          🚀 Jetzt beauftragen
+          � Angebot per E-Mail senden
         </button>
         <button class="btn-back" onclick="goBack(3)">← Zurück zum Vorschlag</button>
       </div>
 
+      <!-- Erfolg -->
       <div id="onboarding-success" style="display:none; margin-top: 1.5rem;">
         <div class="status-card" style="border-color: var(--success);">
           <div style="text-align:center; padding: 0.5rem 0;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
-            <h3 style="font-weight: 700; margin-bottom: 0.3rem;">Anfrage eingegangen!</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Ein Admin wird deinen Tenant auf devhub.iil.pet einrichten. Du erhältst eine E-Mail-Bestätigung.</p>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📬</div>
+            <h3 style="font-weight: 700; margin-bottom: 0.3rem;">E-Mail-Client geöffnet!</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
+              Bitte sende die vorbereitete E-Mail ab. Du und das nl2cad-Team erhalten eine Kopie.<br>
+              <strong>Nach deiner Freigabe</strong> (per Klick im Antwortmail) wird der Tenant automatisch angelegt.
+            </p>
+            <div style="background: var(--code-bg); border-radius: 6px; padding: 10px 16px; font-size: 0.82rem; color: var(--text-dim); text-align: left; margin-top: 0.5rem;">
+              <strong style="color: var(--text-muted);">Nächste Schritte:</strong><br>
+              1. E-Mail absenden (Entwurf wurde geöffnet)<br>
+              2. Freigabe-Link in der Antwortmail klicken<br>
+              3. Tenant wird auf devhub.iil.pet eingerichtet
+            </div>
           </div>
         </div>
         <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
-          <a id="open-tenant-link" href="#" target="_blank" class="btn-primary" style="text-decoration: none; padding: 10px 22px;">
-            🌐 Tenant-Vorschau öffnen
-          </a>
+          <button class="btn-outline" onclick="activateTenant()" style="font-size: 0.85rem;">
+            📧 E-Mail erneut öffnen
+          </button>
           <a href="index.html" class="btn-outline" style="text-decoration: none;">← Zurück zur Landingpage</a>
         </div>
       </div>
@@ -603,7 +631,7 @@ function selectBranch(branchId) {
   renderModuleCards();
   updatePrice();
   document.getElementById("input-branch").value =
-    ["wohnbau","gewerbebau","gutachten","digital"].includes(branchId) ? branchId : "sonstige";
+    ["wohnbau","gewerbebau","industrie","gutachten","nachhaltigkeit","digital"].includes(branchId) ? branchId : "sonstige";
   validateForm();
 }
 
@@ -628,7 +656,7 @@ function renderModuleCards() {
         '<div class="module-top">' +
           '<div>' +
             '<div class="module-pkg">' + m.package + '</div>' +
-            '<div class="module-name">' + m.name + '</div>' +
+            '<div class="module-name">' + m.name + (m.status === 'planned' ? '<span class="status-planned">In Planung</span>' : '') + '</div>' +
           '</div>' +
           '<div class="module-price">' +
             (req ? '<span style="color: var(--success); font-size: 0.9rem; font-weight: 700;">Inklusive</span>' :
@@ -885,31 +913,34 @@ function printProposal() {
 function buildOnboarding() {
   var tenantUrl = window.location.origin + "/nl2cad/?tenant=" + STATE.tenant.id;
   document.getElementById("onboarding-url").textContent = tenantUrl;
-  document.getElementById("open-tenant-link").href = tenantUrl;
-  document.getElementById("email-to-label").textContent = "Bestätigung an " + STATE.tenant.email;
+  document.getElementById("email-to-label").textContent =
+    "An: " + ADMIN_EMAIL + " · CC: " + STATE.tenant.email;
   document.getElementById("badge-post").className = "badge-pending";
+  document.getElementById("badge-post").textContent = "Nach Freigabe";
   document.getElementById("badge-email").className = "badge-pending";
+  document.getElementById("badge-email").textContent = "Ausstehend";
   document.getElementById("onboarding-success").style.display = "none";
   document.getElementById("btn-activate").disabled = false;
-  document.getElementById("btn-activate").textContent = "🚀 Jetzt beauftragen";
+  document.getElementById("btn-activate").innerHTML = "� Angebot per E-Mail senden";
 }
 
 /* ════════════════════════════════════════════════════
-   ACTIVATE TENANT — POST + mailto
+   ACTIVATE TENANT — E-Mail primär + POST zusätzlich
 ════════════════════════════════════════════════════ */
 function activateTenant() {
   var btn = document.getElementById("btn-activate");
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Übermittle…';
-  document.getElementById("badge-post").innerHTML = '<span class="spinner"></span>';
+  btn.innerHTML = '<span class="spinner"></span> E-Mail wird vorbereitet…';
 
   var selectedModules = STATE.modules.filter(function(m) { return STATE.selected.has(m.id); });
   var nonFreeCount = selectedModules.filter(function(m) { return !m.required; }).length;
   var discount = nonFreeCount >= STATE.discountThreshold;
-  var monthlyTotal = 0;
+  var setupTotal = 0, monthlyTotal = 0;
   selectedModules.forEach(function(m) {
     if (!m.required) {
-      monthlyTotal += discount ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+      var monthly = discount ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+      setupTotal += m.pricing.setup_eur;
+      monthlyTotal += monthly;
     }
   });
 
@@ -919,12 +950,18 @@ function activateTenant() {
     contact_email: STATE.tenant.email,
     branch: STATE.tenant.branch,
     enabled_packages: Array.from(STATE.selected),
+    setup_eur: setupTotal,
     monthly_eur: monthlyTotal,
     requested_at: new Date().toISOString(),
     source: "nl2cad-configurator"
   };
 
-  /* POST to devhub */
+  /* 1. E-Mail IMMER öffnen (primärer Flow) */
+  openMailto(payload);
+  document.getElementById("badge-email").className = "badge-done";
+  document.getElementById("badge-email").textContent = "Geöffnet ✓";
+
+  /* 2. POST zusätzlich (best-effort, kein Fallback) */
   fetch(DEVHUB_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -932,40 +969,64 @@ function activateTenant() {
   })
   .then(function(r) {
     document.getElementById("badge-post").className = r.ok ? "badge-done" : "badge-pending";
-    document.getElementById("badge-post").textContent = r.ok ? "Gesendet ✓" : "Fehler";
+    document.getElementById("badge-post").textContent = r.ok ? "Übermittelt ✓" : "Ausstehend";
   })
   .catch(function() {
-    /* Endpoint noch nicht live — trotzdem E-Mail öffnen */
     document.getElementById("badge-post").className = "badge-pending";
-    document.getElementById("badge-post").textContent = "Offline";
-  })
-  .finally(function() {
-    /* E-Mail-Draft */
-    openMailto(payload);
-    document.getElementById("badge-email").className = "badge-done";
-    document.getElementById("badge-email").textContent = "Geöffnet ✓";
-    btn.textContent = "✓ Beauftragung ausgelöst";
-    document.getElementById("onboarding-success").style.display = "block";
-    document.getElementById("open-tenant-link").href =
-      "index.html?tenant=" + STATE.tenant.id;
+    document.getElementById("badge-post").textContent = "Nach Freigabe";
   });
+
+  btn.innerHTML = "📧 E-Mail erneut öffnen";
+  btn.disabled = false;
+  document.getElementById("onboarding-success").style.display = "block";
 }
 
 function openMailto(payload) {
-  var subject = "[nl2cad] Neuer Tenant: " + payload.tenant_name + " (" + payload.tenant_id + ")";
-  var body = "Neuer Tenant-Antrag vom nl2cad Konfigurator\n\n";
-  body += "Tenant-ID:     " + payload.tenant_id + "\n";
-  body += "Name:          " + payload.tenant_name + "\n";
-  body += "Kontakt:       " + payload.contact_email + "\n";
-  body += "Branche:       " + payload.branch + "\n";
-  body += "Module:        " + payload.enabled_packages.join(", ") + "\n";
-  body += "Monatlich:     " + payload.monthly_eur + " EUR\n";
-  body += "Zeitpunkt:     " + payload.requested_at + "\n\n";
-  body += "Bitte Tenant auf devhub.iil.pet anlegen.\n";
+  var subject = "[nl2cad] Implementierungsvorschlag: " + payload.tenant_name + " (" + payload.tenant_id + ")";
+
+  var moduleList = payload.enabled_packages.map(function(id) {
+    var m = STATE.modules.find(function(x) { return x.id === id; });
+    if (!m) return id;
+    var monthly = (!m.required && payload.enabled_packages.length - 1 >= STATE.discountThreshold)
+      ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+    return "  - " + m.package + " (" + m.name + ")" + (m.required ? " [inklusive]" : " → " + monthly + " EUR/Monat");
+  }).join("\n");
+
+  var body = "Sehr geehrte Damen und Herren,\n\n";
+  body += "vielen Dank für Ihr Interesse an nl2cad.\n\n";
+  body += "Nachfolgend Ihr Implementierungsvorschlag:\n\n";
+  body += "══════════════════════════════════\n";
+  body += "TENANT-KONFIGURATION\n";
+  body += "══════════════════════════════════\n";
+  body += "Tenant-ID:       " + payload.tenant_id + "\n";
+  body += "Firmenname:      " + payload.tenant_name + "\n";
+  body += "Branche:         " + payload.branch + "\n";
+  body += "Kontakt:         " + payload.contact_email + "\n";
+  body += "Konfiguriert am: " + new Date(payload.requested_at).toLocaleString("de-DE") + "\n\n";
+  body += "GEWÄHLTE MODULE:\n" + moduleList + "\n\n";
+  body += "══════════════════════════════════\n";
+  body += "PREISÜBERSICHT\n";
+  body += "══════════════════════════════════\n";
+  body += "Setup (einmalig): " + payload.setup_eur + " EUR zzgl. MwSt.\n";
+  body += "Monatlich:        " + payload.monthly_eur + " EUR zzgl. MwSt.\n";
+  body += "Jährlich:         " + (payload.monthly_eur * 12) + " EUR zzgl. MwSt.\n\n";
+  body += "══════════════════════════════════\n";
+  body += "FREIGABE\n";
+  body += "══════════════════════════════════\n";
+  body += "Bitte antworten Sie auf diese E-Mail mit 'FREIGABE ERTEILT',\n";
+  body += "um die Einrichtung Ihres Tenants auf devhub.iil.pet zu starten.\n\n";
+  body += "Nach Ihrer Freigabe:\n";
+  body += "  1. Tenant-Account wird auf devhub.iil.pet angelegt (max. 1 Werktag)\n";
+  body += "  2. Zugangsdaten werden an " + payload.contact_email + " gesendet\n";
+  body += "  3. Ihre Tenant-URL: https://achimdehnert.github.io/nl2cad/?tenant=" + payload.tenant_id + "\n\n";
+  body += "Bei Fragen stehen wir Ihnen gerne zur Verfügung.\n\n";
+  body += "Mit freundlichen Grüßen\n";
+  body += "nl2cad Team · https://achimdehnert.github.io/nl2cad/\n";
+
   var mailto = "mailto:" + ADMIN_EMAIL +
     "?subject=" + encodeURIComponent(subject) +
-    "&body=" + encodeURIComponent(body) +
-    "&cc=" + encodeURIComponent(payload.contact_email);
+    "&cc=" + encodeURIComponent(payload.contact_email) +
+    "&body=" + encodeURIComponent(body);
   window.location.href = mailto;
 }
 </script>
