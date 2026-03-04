@@ -1,0 +1,774 @@
+{
+  "version": "1.0.0",
+  "profiles": [
+    {
+      "id": "architekt",
+      "name": "Architekt",
+      "icon": "🏛️",
+      "fokus": "Entwurf, Planung, Genehmigung, Bauleitung",
+      "bereitschaft": "✅ 70% sofort",
+      "install": "pip install nl2cad-core nl2cad-areas nl2cad-gaeb nl2cad-nlp nl2cad-raumbuch nl2cad-kosten nl2cad-report",
+      "yaml_config": "# profile: architect\nactive_modules:\n  - nl2cad.core\n  - nl2cad.areas          # DIN 277 + WoFlV\n  - nl2cad.gaeb           # GAEB X83 Export\n  - nl2cad.nlp            # NL2CAD\n  - nl2cad.raumbuch       # Raumbuch-Generator\n  - nl2cad.kosten         # DIN 276 Kostenschätzung\n  - nl2cad.report         # PDF-Reports\n\ndin_normen:\n  - DIN_277_2016\n  - WoFlV_2004\n  - DIN_276_2018\n  - HOAI_2021",
+      "nlp_keywords": [
+        "Räume",
+        "Fläche",
+        "DIN 277",
+        "WoFlV",
+        "Raumbuch",
+        "Kosten",
+        "GAEB",
+        "zeichne",
+        "erstelle Grundriss"
+      ],
+      "report_template": "architekt_leistungsphase.jinja2",
+      "primary_output": "Raumbuch (Excel), GAEB-LV, DIN-277-Nachweis, Planzeichnung",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "gaeb",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "energie",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "tga",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "stadtplanung",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "kosten",
+          "mapping_type": "neu",
+          "recommended": false
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "gaeb",
+        "nlp",
+        "tga",
+        "stadtplanung"
+      ]
+    },
+    {
+      "id": "brandschutz_sv",
+      "name": "Brandschutz SV",
+      "icon": "🔥",
+      "fokus": "Sachverständiger Brandschutz, Gutachten, Prüfung",
+      "bereitschaft": "✅ 85% sofort",
+      "install": "pip install nl2cad-core nl2cad-areas nl2cad-brandschutz nl2cad-nlp nl2cad-report",
+      "yaml_config": "# profile: fire_safety\nactive_modules:\n  - nl2cad.core\n  - nl2cad.areas\n  - nl2cad.brandschutz    # Kernmodul\n  - nl2cad.nlp\n\nbrandschutz:\n  regelwerke:\n    - ASR_A2_3            # Fluchtwege (implementiert!)\n    - DIN_4102            # Feuerwiderstand (implementiert!)\n    - MBO_Sec_14          # Brandschutzanforderungen\n    - ATEX_BetrSichV      # Ex-Schutz\n  fluchtweg:\n    max_laenge_m: 35\n    min_breite_m: 0.875\n    check_notausgang: true\n  feuerwiderstand:\n    min_klasse: F30\n    kritisch_ab: F90",
+      "nlp_keywords": [
+        "Fluchtweg",
+        "Brandabschnitt",
+        "T30/T60/T90",
+        "F30/F60/F90",
+        "Feuerwiderstand",
+        "Ex-Zone",
+        "Notausgang",
+        "Brandschutzgutachten"
+      ],
+      "report_template": "brandschutz_gutachten.jinja2",
+      "primary_output": "Brandschutz-Gutachten (PDF), Mängelprotokoll, Fluchtweg-Übersicht",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "bauphysik",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "tga",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "nlp",
+        "bauphysik",
+        "tga",
+        "raumbuch"
+      ]
+    },
+    {
+      "id": "tragwerksplaner",
+      "name": "Tragwerksplaner",
+      "icon": "⚙️",
+      "fokus": "Statik, Tragwerksplanung, Nachweise",
+      "bereitschaft": "",
+      "install": "",
+      "yaml_config": "",
+      "nlp_keywords": [],
+      "report_template": "",
+      "primary_output": "",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "gaeb",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "tragwerk",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "bauphysik",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "kosten",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "gaeb",
+        "nlp",
+        "bauphysik",
+        "kosten"
+      ]
+    },
+    {
+      "id": "tga_planer",
+      "name": "TGA-Planer",
+      "icon": "🔧",
+      "fokus": "Heizung, Lüftung, Sanitär, Elektro (MEP)",
+      "bereitschaft": "🔨 Neu-Entwicklung",
+      "install": "pip install nl2cad-core nl2cad-gaeb nl2cad-tga nl2cad-energie nl2cad-report",
+      "yaml_config": "# profile: mep_engineer\nactive_modules:\n  - nl2cad.core\n  - nl2cad.gaeb\n  - nl2cad.tga            # NEU — MEP-Mengen\n  - nl2cad.energie        # NEU — Heizlast-Basis\n\ntga:\n  gewerke:\n    - heizung:            # GAEB DIN 18380\n        gaeb_los: \"02\"\n        einheit: m\n    - lueftung:           # GAEB DIN 18379\n        gaeb_los: \"03\"\n        einheit: m²\n    - sanitaer:           # GAEB DIN 18381\n        gaeb_los: \"04\"\n        einheit: Stk\n    - elektro:            # GAEB DIN 18382\n        gaeb_los: \"05\"\n        einheit: m",
+      "nlp_keywords": [
+        "Heizungsleitungen",
+        "Lüftungskanal",
+        "Sanitär",
+        "MEP-Mengen",
+        "TGA-GAEB",
+        "Rohrleitungen"
+      ],
+      "report_template": "tga_massenermittlung.jinja2",
+      "primary_output": "TGA-GAEB-LV, MEP-Mengenermittlung, Heizlast",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "gaeb",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "energie",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "bauphysik",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "tga",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "fm",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "kosten",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "gaeb",
+        "nlp",
+        "energie",
+        "bauphysik",
+        "raumbuch",
+        "fm",
+        "kosten"
+      ]
+    },
+    {
+      "id": "energieberater",
+      "name": "Energieberater",
+      "icon": "☀️",
+      "fokus": "GEG-Beratung, EnEV-Nachweise, KfW-Anträge",
+      "bereitschaft": "🔨 Neu-Entwicklung",
+      "install": "pip install nl2cad-core nl2cad-areas nl2cad-energie nl2cad-bauphysik nl2cad-report",
+      "yaml_config": "# profile: energy_consultant\nactive_modules:\n  - nl2cad.core\n  - nl2cad.areas\n  - nl2cad.energie        # NEU — GEG, U-Wert, Heizlast\n  - nl2cad.bauphysik      # NEU — Schall, Feuchte\n\nenergie:\n  normen:\n    - GEG_2020\n    - EN_12831_2017       # Heizlast\n    - DIN_4108_2\n  kfw_klassen:\n    - EH40\n    - EH55\n    - EH70\n  berechnung:\n    methode: monatsbilanz  # monatsbilanz | stundenweise\n    klima_region: DE_TRY",
+      "nlp_keywords": [
+        "U-Wert",
+        "Heizlast",
+        "GEG",
+        "EnEV",
+        "Energieausweis",
+        "KfW",
+        "Primärenergie",
+        "Wärmedurchgang"
+      ],
+      "report_template": "energieberatung_kurzgutachten.jinja2",
+      "primary_output": "Energieausweis, GEG-Nachweis, KfW-Antrag-Grundlage",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "gaeb",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "energie",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "bauphysik",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "tga",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "gaeb",
+        "nlp",
+        "tga",
+        "raumbuch"
+      ]
+    },
+    {
+      "id": "bauphysiker",
+      "name": "Bauphysiker",
+      "icon": "🌡️",
+      "fokus": "Wärme, Schall, Feuchte, Brandschutz (physik.)",
+      "bereitschaft": "",
+      "install": "",
+      "yaml_config": "",
+      "nlp_keywords": [],
+      "report_template": "",
+      "primary_output": "",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "energie",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "bauphysik",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "tga",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "tga"
+      ]
+    },
+    {
+      "id": "projektsteurer",
+      "name": "Projektsteurer",
+      "icon": "📋",
+      "fokus": "Kosten, Termine, Qualität, AVB",
+      "bereitschaft": "✅ 60% (GAEB vorhanden, Kosten neu)",
+      "install": "pip install nl2cad-core nl2cad-areas nl2cad-gaeb nl2cad-kosten nl2cad-raumbuch nl2cad-report",
+      "yaml_config": "# profile: project_manager\nactive_modules:\n  - nl2cad.core\n  - nl2cad.areas\n  - nl2cad.gaeb           # AVB-Pipeline\n  - nl2cad.kosten         # NEU — DIN 276\n  - nl2cad.raumbuch       # NEU\n  - nl2cad.report         # NEU\n\nkosten:\n  normen:\n    - DIN_276_2018\n  kostengruppen:\n    - KG300: Bauwerk Baukonstruktion\n    - KG400: Bauwerk Technische Anlagen\n    - KG500: Außenanlagen\n  richtwerte_quelle: BKI_2024",
+      "nlp_keywords": [
+        "Kosten",
+        "DIN 276",
+        "Kostengruppen",
+        "AVB",
+        "Ausschreibung",
+        "GAEB",
+        "Leistungsverzeichnis",
+        "Budget"
+      ],
+      "report_template": "projektkostenplan.jinja2",
+      "primary_output": "Kostenschätzung (DIN 276), GAEB-LV, Projektkostenplan",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "gaeb",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "fm",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "kosten",
+          "mapping_type": "neu",
+          "recommended": false
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "gaeb",
+        "nlp",
+        "fm"
+      ]
+    },
+    {
+      "id": "gutachter",
+      "name": "Gutachter",
+      "icon": "🔍",
+      "fokus": "Wertermittlung, Zustandsbewertung, Schäden",
+      "bereitschaft": "🔨 Neu-Entwicklung",
+      "install": "pip install nl2cad-core nl2cad-areas nl2cad-gutachten nl2cad-report",
+      "yaml_config": "# profile: surveyor\nactive_modules:\n  - nl2cad.core\n  - nl2cad.areas          # WoFlV, DIN 277\n  - nl2cad.gutachten      # NEU — Wertermittlung\n  - nl2cad.report         # NEU\n\ngutachten:\n  methoden:\n    - vergleichswert      # ImmoWertV §15\n    - ertragswert         # ImmoWertV §17\n    - sachwert            # ImmoWertV §21\n  flaechen_basis:\n    wohnen: WoFlV_2004\n    gewerbe: DIN_277\n    nutzflaeche: II_BV",
+      "nlp_keywords": [
+        "Wohnfläche",
+        "WoFlV",
+        "Verkehrswert",
+        "Sachwert",
+        "Ertragswert",
+        "Wertermittlung",
+        "Zustand",
+        "Mängel"
+      ],
+      "report_template": "gutachten_kurzgutachten.jinja2",
+      "primary_output": "Wertgutachten (PDF), WoFlV-Nachweis, Zustandsprotokoll",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "tragwerk",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "energie",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "bauphysik",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "gutachten",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "stadtplanung",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "kosten",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "nlp",
+        "tragwerk",
+        "energie",
+        "bauphysik",
+        "raumbuch",
+        "stadtplanung",
+        "kosten"
+      ]
+    },
+    {
+      "id": "stadtplaner",
+      "name": "Stadtplaner",
+      "icon": "🗺️",
+      "fokus": "Bebauungsplan, Abstandsflächen, Nutzungsplan",
+      "bereitschaft": "🔨 Neu-Entwicklung",
+      "install": "pip install nl2cad-core nl2cad-stadtplanung nl2cad-report",
+      "yaml_config": "# profile: urban_planner\nactive_modules:\n  - nl2cad.core\n  - nl2cad.stadtplanung   # NEU — Abstandsflächen, GRZ/GFZ\n\nstadtplanung:\n  bundesland: BY          # Bayern → BayBO\n  normen:\n    - BauNVO\n    - MBO\n    - BayBO                # Bundesland-spezifisch\n  abstandsflaechen:\n    faktor: 1.0           # 1H nach MBO §6\n    mindestmass_m: 3.0\n  kennzahlen:\n    grz_max: 0.4\n    gfz_max: 1.2",
+      "nlp_keywords": [
+        "GRZ",
+        "GFZ",
+        "Abstandsflächen",
+        "Bebauungsplan",
+        "Baugrenze",
+        "Baulinie",
+        "Verschattung",
+        "Planungsrecht"
+      ],
+      "report_template": "bebauungsplan_analyse.jinja2",
+      "primary_output": "Abstandsflächen-Nachweis, GRZ/GFZ-Berechnung, B-Plan-Analyse",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "gutachten",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "stadtplanung",
+          "mapping_type": "neu",
+          "recommended": false
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "nlp",
+        "gutachten"
+      ]
+    },
+    {
+      "id": "facility_manager",
+      "name": "Facility Manager",
+      "icon": "🏢",
+      "fokus": "Betrieb, Wartung, Instandhaltung, CAFM",
+      "bereitschaft": "🔨 Neu-Entwicklung",
+      "install": "pip install nl2cad-core nl2cad-areas nl2cad-brandschutz nl2cad-raumbuch nl2cad-fm nl2cad-report",
+      "yaml_config": "# profile: facility_manager\nactive_modules:\n  - nl2cad.core\n  - nl2cad.areas\n  - nl2cad.brandschutz    # Brandschutz-Checks\n  - nl2cad.raumbuch       # NEU\n  - nl2cad.fm             # NEU — Wartungsplanung\n\nfacility_management:\n  normen:\n    - GEFMA_220            # Bauteillebensdauer\n    - DIN_31051            # Instandhaltung\n    - DIN_EN_15221         # FM-Normen\n  reinigung:\n    methode: DIN_18032\n    einheit: m²_pro_stunde\n  qr_codes: true           # QR-Code pro Bauteil",
+      "nlp_keywords": [
+        "Reinigung",
+        "Wartung",
+        "Instandhaltung",
+        "CAFM",
+        "Bauteillebensdauer",
+        "Raumbuch",
+        "Facility"
+      ],
+      "report_template": "wartungsplan.jinja2",
+      "primary_output": "Wartungsplan, Raumbuch, Reinigungsflächen, CAFM-Export",
+      "modules": [
+        {
+          "id": "core",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "areas",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "brandschutz",
+          "mapping_type": "vorhanden",
+          "recommended": true
+        },
+        {
+          "id": "gaeb",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "nlp",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "energie",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "tga",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        },
+        {
+          "id": "raumbuch",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "report",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "fm",
+          "mapping_type": "neu",
+          "recommended": false
+        },
+        {
+          "id": "kosten",
+          "mapping_type": "konfiguration",
+          "recommended": true
+        }
+      ],
+      "recommended_modules": [
+        "core",
+        "areas",
+        "brandschutz",
+        "gaeb",
+        "nlp",
+        "energie",
+        "tga",
+        "kosten"
+      ]
+    }
+  ]
+}
