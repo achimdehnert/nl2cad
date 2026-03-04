@@ -5,11 +5,12 @@
 # =============================================================================
 #
 # USAGE:
-#   bash scripts/publish.sh                        # all 5 packages
-#   bash scripts/publish.sh --only nl2cad-core     # single package
-#   bash scripts/publish.sh --dry-run              # build only, no upload
-#   bash scripts/publish.sh --test                 # upload to TestPyPI
-#   PYPI_TOKEN=pypi-xxx bash scripts/publish.sh    # non-interactive (CI)
+#   bash scripts/publish.sh                            # all packages incl. meta
+#   bash scripts/publish.sh --only nl2cad-core         # single package
+#   bash scripts/publish.sh --only iil-nl2cadfw        # meta-package only
+#   bash scripts/publish.sh --dry-run                  # build only, no upload
+#   bash scripts/publish.sh --test                     # upload to TestPyPI
+#   PYPI_TOKEN=pypi-xxx bash scripts/publish.sh        # non-interactive (CI)
 #
 # TOKEN: never pass as CLI argument — use env var or interactive prompt.
 # =============================================================================
@@ -25,8 +26,8 @@ err()    { echo -e "${_RED}[publish] ✗${_RESET} $*" >&2; exit 1; }
 info()   { echo -e "${_CYAN}[publish]  $*${_RESET}"; }
 header() { echo -e "\n${_BOLD}[publish] ══ $* ══${_RESET}"; }
 
-# ── nl2cad packages ──────────────────────────────────────────────────────────
-DEFAULT_PACKAGES=(nl2cad-core nl2cad-areas nl2cad-brandschutz nl2cad-gaeb nl2cad-nlp)
+# ── nl2cad packages (sub-packages + meta-package) ────────────────────────────
+DEFAULT_PACKAGES=(nl2cad-core nl2cad-areas nl2cad-brandschutz nl2cad-gaeb nl2cad-nlp iil-nl2cadfw)
 
 # ── Argument parsing ─────────────────────────────────────────────────────────
 TEST_PYPI=false
