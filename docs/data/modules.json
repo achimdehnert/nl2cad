@@ -1,0 +1,164 @@
+{
+  "version": "1.0.0",
+  "currency": "EUR",
+  "discount_threshold": 3,
+  "discount_percent": 15,
+  "modules": [
+    {
+      "id": "core",
+      "package": "nl2cad-core",
+      "name": "Core Parser & Pipeline",
+      "icon": "🏗️",
+      "color": "#2563eb",
+      "tagline": "IFC/DXF-Parser, Dataclasses, Handler-Pipeline",
+      "description": "Grundlage aller nl2cad-Packages. IFC (IFC2X3, IFC4, IFC4X3) und DXF-Parser, typsichere Dataclasses (IFCRoom, IFCWall, DXFModel), erweiterbare Handler-Pipeline (Chain of Responsibility), Qualitätsprüfung.",
+      "features": [
+        "IFC2X3 / IFC4 / IFC4X3 Parser",
+        "DXF Parser (R2004–R2018)",
+        "Handler-Pipeline (BaseCADHandler)",
+        "IFCQualityChecker",
+        "MassenHandler",
+        "Typsichere Dataclasses"
+      ],
+      "deps": ["ifcopenshell", "ezdxf"],
+      "required": true,
+      "pricing": {
+        "setup_eur": 0,
+        "monthly_eur": 0,
+        "label": "Inklusive (Basis)"
+      },
+      "pypi": "https://pypi.org/project/nl2cad-core/"
+    },
+    {
+      "id": "areas",
+      "package": "nl2cad-areas",
+      "name": "DIN 277 & WoFlV",
+      "icon": "📐",
+      "color": "#059669",
+      "tagline": "Flächenrechner nach DIN 277 (2016) und WoFlV",
+      "description": "Vollständige Umsetzung der DIN 277 (Ausgabe 2016): NUF, VF, TF, KGF-Klassifikation. WoFlV-Berechnung für Wohnbauten. Automatische Nutzungsklassifikation aus IFC-Raumnamen.",
+      "features": [
+        "DIN 277 (2016) vollständig",
+        "NUF / VF / TF / KGF Klassifikation",
+        "WoFlV Wohnflächenberechnung",
+        "Auto-Klassifikation aus IFC-Namen",
+        "Raumbuch-Export (dict/JSON)"
+      ],
+      "deps": ["nl2cad-core"],
+      "required": false,
+      "pricing": {
+        "setup_eur": 0,
+        "monthly_eur": 49,
+        "label": "49 € / Monat"
+      },
+      "pypi": "https://pypi.org/project/nl2cad-areas/"
+    },
+    {
+      "id": "brandschutz",
+      "package": "nl2cad-brandschutz",
+      "name": "Brandschutz-Analyse",
+      "icon": "🔥",
+      "color": "#dc2626",
+      "tagline": "Fluchtweg-Prüfung, ASR A2.3, DIN 4102, EN 13501",
+      "description": "Automatische Brandschutz-Analyse aus IFC/DXF: Fluchtweg-Längen nach ASR A2.3, Feuerwiderstandsklassen (F30–F180, REI/EI), Brandabschnitts-Erkennung, Mängelprotokoll mit Schweregrad.",
+      "features": [
+        "Fluchtweg-Analyse (ASR A2.3)",
+        "Feuerwiderstandsklassen DIN 4102",
+        "EN 13501 (REI, EI, E, R)",
+        "Brandabschnitts-Erkennung",
+        "Brandschutztüren (T30/T60/T90)",
+        "Mängelprotokoll mit Schweregrad"
+      ],
+      "deps": ["nl2cad-core", "nl2cad-areas"],
+      "required": false,
+      "pricing": {
+        "setup_eur": 0,
+        "monthly_eur": 79,
+        "label": "79 € / Monat"
+      },
+      "pypi": "https://pypi.org/project/nl2cad-brandschutz/"
+    },
+    {
+      "id": "gaeb",
+      "package": "nl2cad-gaeb",
+      "name": "GAEB X81–X85 Generator",
+      "icon": "📋",
+      "color": "#f59e0b",
+      "tagline": "GAEB-Datenaustausch direkt aus IFC-Modellen",
+      "description": "Vollständiger GAEB-Datenaustausch (X81 Ausschreibung bis X85 Abrechnung) aus IFC-Modellen. XML-Export normkonform, Excel-Ausgabe via openpyxl, IFC→X83 Converter für Angebote mit Mengen und Preisen.",
+      "features": [
+        "GAEB X81 / X82 / X83 / X84 / X85",
+        "IFC → X83 Converter",
+        "XML-Export (normkonform)",
+        "Excel-Export (openpyxl)",
+        "Leistungsverzeichnis-Struktur",
+        "MwSt-Berechnung"
+      ],
+      "deps": ["nl2cad-core", "openpyxl"],
+      "required": false,
+      "pricing": {
+        "setup_eur": 0,
+        "monthly_eur": 89,
+        "label": "89 € / Monat"
+      },
+      "pypi": "https://pypi.org/project/nl2cad-gaeb/"
+    },
+    {
+      "id": "nlp",
+      "package": "nl2cad-nlp",
+      "name": "NLP / Natural Language → CAD",
+      "icon": "🧠",
+      "color": "#7c3aed",
+      "tagline": "Intent-Klassifikation, NL2DXF, lernender Pattern-Store",
+      "description": "Natürlichsprachliche BIM-Queries auf Intents mappen (Raumanalyse, DIN277, GAEB, Brandschutz ...). NL2DXF Generator konvertiert Textbeschreibungen in DXF-Befehle (Regex-Fallback + LLM). Lernender JSON-Store pro Tenant.",
+      "features": [
+        "Intent-Klassifikation (10 Intents)",
+        "NL2DXF Generator (Regex + LLM)",
+        "OpenAI / Anthropic Integration",
+        "Lernender Pattern-Store (JSON)",
+        "Tenant-isolierter Store",
+        "Pydantic-Modelle"
+      ],
+      "deps": ["nl2cad-core", "pydantic", "httpx"],
+      "required": false,
+      "pricing": {
+        "setup_eur": 199,
+        "monthly_eur": 149,
+        "label": "199 € Setup + 149 € / Monat"
+      },
+      "pypi": "https://pypi.org/project/nl2cad-nlp/"
+    }
+  ],
+  "branches": [
+    {
+      "id": "wohnbau",
+      "label": "Wohnungsbau",
+      "recommended_modules": ["core", "areas"],
+      "description": "Typisch für Wohnbauprojekte: IFC-Parser + WoFlV/DIN 277"
+    },
+    {
+      "id": "gewerbebau",
+      "label": "Gewerbebau / Büro",
+      "recommended_modules": ["core", "areas", "brandschutz", "gaeb"],
+      "description": "Vollständig für gewerbliche Bauten: DIN 277 + Brandschutz + GAEB-Ausschreibung"
+    },
+    {
+      "id": "gutachten",
+      "label": "Gutachten / Sachverständige",
+      "recommended_modules": ["core", "areas", "brandschutz"],
+      "description": "Brandschutz-Gutachten, WoFlV-Überprüfung, IFC-Qualitätsprüfung"
+    },
+    {
+      "id": "digital",
+      "label": "Digitales Bauen / KI",
+      "recommended_modules": ["core", "areas", "gaeb", "nlp"],
+      "description": "Maximale Automatisierung: NL-Queries, GAEB-Export, AI-Integration"
+    },
+    {
+      "id": "full",
+      "label": "Komplett-Suite",
+      "recommended_modules": ["core", "areas", "brandschutz", "gaeb", "nlp"],
+      "description": "Alle Module, maximale Funktionalität"
+    }
+  ]
+}

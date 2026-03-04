@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nl2cad Modul-Konfigurator</title>
+  <meta name="description" content="Konfiguriere deine nl2cad-Module, erhalte einen Implementierungsvorschlag und starte als eigener Tenant." />
+  <style>
+    :root {
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card2: #162032;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border: #334155;
+      --code-bg: #0d1117;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 58px;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.05rem;
+      color: var(--text); text-decoration: none;
+    }
+    .logo-icon {
+      width: 30px; height: 30px; background: var(--accent);
+      border-radius: 7px; display: flex; align-items: center;
+      justify-content: center; font-size: 0.8rem; font-weight: 800; color: white;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.88rem; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--accent); }
+
+    /* ── STEPPER ── */
+    .stepper {
+      max-width: 1100px; margin: 0 auto;
+      padding: 2rem 2rem 0;
+      display: flex; align-items: center; gap: 0;
+    }
+    .step {
+      display: flex; align-items: center; gap: 10px;
+      flex: 1; position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: ""; position: absolute;
+      left: 44px; right: -10px; top: 17px;
+      height: 2px; background: var(--border);
+      z-index: 0;
+    }
+    .step.done:not(:last-child)::after { background: var(--success); }
+    .step.active:not(:last-child)::after { background: var(--border); }
+    .step-num {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+      background: var(--bg); color: var(--text-dim);
+      position: relative; z-index: 1; flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step.active .step-num { border-color: var(--accent); color: var(--accent); background: rgba(37,99,235,0.1); }
+    .step.done .step-num { border-color: var(--success); background: var(--success); color: white; }
+    .step-label { font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
+    .step.active .step-label { color: var(--text); font-weight: 600; }
+    .step.done .step-label { color: var(--text-muted); }
+
+    /* ── MAIN ── */
+    main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+    /* ── STAGE PANELS ── */
+    .stage { display: none; }
+    .stage.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── STAGE 1: KONFIGURATOR ── */
+    .config-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+    }
+    .config-left h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .config-left > p { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.5rem; }
+
+    /* Branche quick-select */
+    .branch-select-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 0.6rem; }
+    .branch-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; }
+    .branch-chip {
+      padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--border); background: none; color: var(--text-muted);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .branch-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .branch-chip.active { border-color: var(--accent); background: rgba(37,99,235,0.12); color: var(--accent); }
+
+    /* Module cards */
+    .module-cards { display: flex; flex-direction: column; gap: 1rem; }
+    .module-card {
+      background: var(--bg-card); border: 2px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+      display: flex; align-items: flex-start; gap: 1.25rem;
+    }
+    .module-card.selected { border-color: var(--accent); background: rgba(37,99,235,0.06); }
+    .module-card.required { cursor: default; opacity: 0.85; }
+    .module-card.required .module-checkbox { background: var(--success); border-color: var(--success); }
+    .module-checkbox {
+      width: 22px; height: 22px; border-radius: 6px;
+      border: 2px solid var(--border); background: none;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px; transition: all 0.15s;
+    }
+    .module-card.selected .module-checkbox { background: var(--accent); border-color: var(--accent); }
+    .module-checkbox svg { display: none; }
+    .module-card.selected .module-checkbox svg,
+    .module-card.required .module-checkbox svg { display: block; }
+    .module-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .module-body { flex: 1; min-width: 0; }
+    .module-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.3rem; }
+    .module-name { font-weight: 700; font-size: 1rem; }
+    .module-pkg { font-family: monospace; font-size: 0.75rem; color: var(--accent); }
+    .module-price { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; text-align: right; }
+    .module-price .price-main { font-size: 1rem; color: var(--text); }
+    .module-tagline { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .module-features { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+    .feat-chip {
+      font-size: 0.72rem; padding: 2px 8px;
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text-dim);
+    }
+    .module-card.selected .feat-chip { border-color: rgba(37,99,235,0.3); color: var(--text-muted); }
+
+    /* ── PRICE SIDEBAR ── */
+    .price-sidebar {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      position: sticky; top: 80px;
+    }
+    .price-sidebar h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .price-lines { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
+    .price-line { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    .price-line.total { font-size: 1rem; font-weight: 700; color: var(--text); border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.25rem; }
+    .price-line .val { font-weight: 600; color: var(--text); }
+    .discount-badge {
+      background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+      color: var(--success); padding: 6px 12px; border-radius: 6px;
+      font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem; text-align: center;
+    }
+    .tenant-form { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .form-field label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 0.35rem; }
+    .form-field input, .form-field select {
+      width: 100%; background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 9px 12px; color: var(--text); font-size: 0.88rem;
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-field input:focus, .form-field select:focus { border-color: var(--accent); }
+    .form-field input::placeholder { color: var(--text-dim); }
+    .btn-proceed {
+      width: 100%; padding: 12px; border-radius: 8px;
+      background: var(--accent); color: white; font-size: 0.95rem; font-weight: 700;
+      border: none; cursor: pointer; margin-top: 0.5rem;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-proceed:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-proceed:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ── STAGE 2: PROPOSAL ── */
+    .proposal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .proposal-header h2 { font-size: 1.5rem; font-weight: 800; }
+    .proposal-header p { color: var(--text-muted); font-size: 0.92rem; margin-top: 0.3rem; }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 8px 16px; border-radius: 6px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    .proposal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .proposal-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .proposal-card h4 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 1rem; }
+    .proposal-full { grid-column: 1 / -1; }
+
+    /* Arch diagram */
+    .arch-diagram { display: flex; flex-direction: column; gap: 0.5rem; }
+    .arch-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .arch-box {
+      padding: 5px 12px; border-radius: 6px;
+      font-family: monospace; font-size: 0.78rem; font-weight: 700;
+      border: 1px solid var(--border); color: var(--text-muted);
+    }
+    .arch-box.active { color: white; }
+    .arch-arrow { color: var(--text-dim); font-size: 0.9rem; }
+
+    /* Code block */
+    .code-proposal {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 1.25rem;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 0.78rem; line-height: 1.7; overflow-x: auto;
+      white-space: pre;
+    }
+    .c-kw { color: #c792ea; }
+    .c-fn { color: #82aaff; }
+    .c-str { color: #c3e88d; }
+    .c-cm { color: #546e7a; font-style: italic; }
+    .c-num { color: #f78c6c; }
+    .c-cls { color: #ffcb6b; }
+    .c-op { color: #89ddff; }
+
+    /* Price summary */
+    .price-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .price-box { text-align: center; padding: 1rem; background: var(--code-bg); border-radius: 8px; border: 1px solid var(--border); }
+    .price-box .pb-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 0.4rem; }
+    .price-box .pb-val { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+    .price-box .pb-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.2rem; }
+    .price-box.highlight { border-color: var(--accent); background: rgba(37,99,235,0.07); }
+    .price-box.highlight .pb-val { color: var(--accent); }
+
+    /* Module summary list */
+    .module-summary-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .msl-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; }
+    .msl-icon { font-size: 1.1rem; }
+    .msl-name { font-weight: 600; flex: 1; }
+    .msl-price { color: var(--text-muted); font-size: 0.82rem; }
+    .msl-required { font-size: 0.7rem; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--success); padding: 1px 7px; border-radius: 10px; }
+
+    /* Install snippet */
+    .install-snippet {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px 16px;
+      font-family: monospace; font-size: 0.85rem; color: var(--text-muted);
+    }
+    .install-snippet .pkg-name { color: #c3e88d; }
+
+    /* CTA row */
+    .proposal-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .btn-primary { padding: 12px 28px; border-radius: 8px; background: var(--accent); color: white; font-size: 0.95rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-outline { padding: 12px 22px; border-radius: 8px; background: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── STAGE 3: ONBOARDING ── */
+    .onboarding-layout { max-width: 680px; margin: 0 auto; text-align: center; }
+    .onboarding-layout h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.75rem; }
+    .onboarding-layout > p { color: var(--text-muted); margin-bottom: 2rem; }
+    .status-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.75rem; text-align: left; margin-bottom: 1.25rem;
+    }
+    .status-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+    .status-row:last-child { margin-bottom: 0; }
+    .status-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .status-text h4 { font-size: 0.92rem; font-weight: 700; }
+    .status-text p { font-size: 0.82rem; color: var(--text-muted); }
+    .status-badge { margin-left: auto; flex-shrink: 0; }
+    .badge-pending { font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--warning); }
+    .badge-done { font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: var(--success); }
+    .badge-action { font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.3); color: var(--accent); }
+    .onboarding-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+    .tenant-url-box {
+      background: var(--code-bg); border: 1px solid var(--accent);
+      border-radius: 8px; padding: 12px 18px;
+      font-family: monospace; font-size: 0.85rem; color: var(--accent);
+      margin: 1.25rem 0; word-break: break-all; text-align: left;
+    }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .config-layout { grid-template-columns: 1fr; }
+      .price-sidebar { position: static; }
+      .proposal-grid { grid-template-columns: 1fr; }
+      .price-summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 500px) {
+      .stepper { gap: 0; }
+      .step-label { display: none; }
+      .price-summary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <div class="logo-icon">n2</div>
+      nl2cad
+    </a>
+    <a href="index.html" class="nav-back">← Zurück zur Übersicht</a>
+  </div>
+</nav>
+
+<!-- STEPPER -->
+<div class="stepper" id="stepper">
+  <div class="step active" id="step-1">
+    <div class="step-num">1</div>
+    <span class="step-label">Module wählen</span>
+  </div>
+  <div class="step" id="step-2">
+    <div class="step-num">2</div>
+    <span class="step-label">Implementierungsvorschlag</span>
+  </div>
+  <div class="step" id="step-3">
+    <div class="step-num" id="step3-num">3</div>
+    <span class="step-label">Tenant aktivieren</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       STAGE 1 — KONFIGURATOR
+  ══════════════════════════════════════════ -->
+  <div class="stage active" id="stage-1">
+    <div class="config-layout">
+
+      <!-- LEFT: Module -->
+      <div class="config-left">
+        <h2>Module konfigurieren</h2>
+        <p>Wähle die Pakete, die du benötigst. nl2cad-core ist immer enthalten.</p>
+
+        <div class="branch-select-label">Schnellauswahl nach Branche</div>
+        <div class="branch-chips" id="branch-chips"></div>
+
+        <div class="module-cards" id="module-cards">
+          <!-- wird per JS befüllt -->
+          <div style="color: var(--text-dim); padding: 2rem; text-align: center;">
+            <div class="spinner"></div>
+            <p style="margin-top: 0.5rem;">Module werden geladen…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Price Sidebar -->
+      <div class="price-sidebar">
+        <h3>Konfiguration & Preis</h3>
+        <div class="price-lines" id="price-lines">
+          <div class="price-line"><span>nl2cad-core</span><span class="val">inklusive</span></div>
+        </div>
+        <div class="discount-badge" id="discount-badge" style="display:none">
+          🎉 15% Rabatt ab 3 Modulen
+        </div>
+        <div class="price-lines">
+          <div class="price-line"><span>Setup (einmalig)</span><span class="val" id="total-setup">0 €</span></div>
+          <div class="price-line total"><span>Gesamt / Monat</span><span class="val" id="total-monthly">0 €</span></div>
+        </div>
+
+        <div class="tenant-form">
+          <div class="form-field">
+            <label>Firmenname / Projektname</label>
+            <input type="text" id="input-tenant-name" placeholder="z.B. Baufirma Müller GmbH" />
+          </div>
+          <div class="form-field">
+            <label>Tenant-ID (URL-Slug)</label>
+            <input type="text" id="input-tenant-id" placeholder="z.B. baufirma-mueller" />
+          </div>
+          <div class="form-field">
+            <label>Branche</label>
+            <select id="input-branch">
+              <option value="">Bitte wählen…</option>
+              <option value="wohnbau">Wohnungsbau</option>
+              <option value="gewerbebau">Gewerbebau / Büro</option>
+              <option value="gutachten">Gutachten / Sachverständige</option>
+              <option value="digital">Digitales Bauen / KI</option>
+              <option value="sonstige">Sonstige</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Kontakt-E-Mail</label>
+            <input type="email" id="input-email" placeholder="kontakt@beispiel.de" />
+          </div>
+          <button class="btn-proceed" id="btn-to-proposal" disabled onclick="goToProposal()">
+            Implementierungsvorschlag anzeigen →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       STAGE 2 — IMPLEMENTIERUNGSVORSCHLAG
+  ══════════════════════════════════════════ -->
+  <div class="stage" id="stage-2">
+    <div class="proposal-header">
+      <div>
+        <h2>Implementierungsvorschlag</h2>
+        <p id="proposal-subtitle">Für <strong id="proposal-tenant-name">—</strong> · <span id="proposal-date"></span></p>
+      </div>
+      <div style="display:flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn-back" onclick="goBack(2)">← Konfiguration anpassen</button>
+        <button class="btn-outline" onclick="printProposal()">🖨️ Als PDF drucken</button>
+      </div>
+    </div>
+
+    <!-- Preis-Boxen -->
+    <div class="price-summary-grid" id="proposal-price-grid" style="margin-bottom: 1.5rem;"></div>
+
+    <div class="proposal-grid">
+
+      <!-- Gewählte Module -->
+      <div class="proposal-card">
+        <h4>Gewählte Module</h4>
+        <div class="module-summary-list" id="proposal-module-list"></div>
+      </div>
+
+      <!-- Architektur -->
+      <div class="proposal-card">
+        <h4>Package-Architektur</h4>
+        <div class="arch-diagram" id="proposal-arch"></div>
+      </div>
+
+      <!-- pip install -->
+      <div class="proposal-card proposal-full">
+        <h4>Installation</h4>
+        <div class="install-snippet" id="proposal-install"></div>
+      </div>
+
+      <!-- TenantConfig Code -->
+      <div class="proposal-card proposal-full">
+        <h4>TenantConfig — Fertig-Snippet</h4>
+        <div class="code-proposal" id="proposal-code"></div>
+      </div>
+
+      <!-- Pipeline Code -->
+      <div class="proposal-card proposal-full">
+        <h4>Handler-Pipeline für deine Module</h4>
+        <div class="code-proposal" id="proposal-pipeline"></div>
+      </div>
+
+    </div>
+
+    <div class="proposal-actions">
+      <button class="btn-primary" onclick="goToOnboarding()">
+        🚀 Jetzt als Tenant aktivieren
+      </button>
+      <button class="btn-outline" onclick="downloadConfig()">
+        ⬇️ tenant_config.py herunterladen
+      </button>
+      <button class="btn-outline" onclick="printProposal()">
+        🖨️ Produktbroschüre (PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       STAGE 3 — TENANT ONBOARDING
+  ══════════════════════════════════════════ -->
+  <div class="stage" id="stage-3">
+    <div class="onboarding-layout">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+      <h2>Tenant wird aktiviert</h2>
+      <p id="onboarding-intro">Deine Konfiguration wird an <strong>devhub.iil.pet</strong> übermittelt und ein Admin richtet deinen Tenant ein.</p>
+
+      <div class="tenant-url-box" id="onboarding-url"></div>
+
+      <div class="status-card">
+        <div class="status-row">
+          <div class="status-icon">📡</div>
+          <div class="status-text">
+            <h4>Konfiguration übermitteln</h4>
+            <p>POST → devhub.iil.pet/api/tenants/create</p>
+          </div>
+          <div class="status-badge"><span id="badge-post" class="badge-pending">Ausstehend</span></div>
+        </div>
+        <div class="status-row">
+          <div class="status-icon">📧</div>
+          <div class="status-text">
+            <h4>Bestätigungs-E-Mail</h4>
+            <p id="email-to-label">Wird an Admin + dich gesendet</p>
+          </div>
+          <div class="status-badge"><span id="badge-email" class="badge-pending">Ausstehend</span></div>
+        </div>
+        <div class="status-row">
+          <div class="status-icon">🏢</div>
+          <div class="status-text">
+            <h4>Tenant-Account anlegen</h4>
+            <p>Admin richtet Zugang auf devhub.iil.pet ein</p>
+          </div>
+          <div class="status-badge"><span class="badge-action">Admin-Aufgabe</span></div>
+        </div>
+      </div>
+
+      <div class="onboarding-actions">
+        <button class="btn-primary" id="btn-activate" onclick="activateTenant()">
+          🚀 Jetzt beauftragen
+        </button>
+        <button class="btn-back" onclick="goBack(3)">← Zurück zum Vorschlag</button>
+      </div>
+
+      <div id="onboarding-success" style="display:none; margin-top: 1.5rem;">
+        <div class="status-card" style="border-color: var(--success);">
+          <div style="text-align:center; padding: 0.5rem 0;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+            <h3 style="font-weight: 700; margin-bottom: 0.3rem;">Anfrage eingegangen!</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Ein Admin wird deinen Tenant auf devhub.iil.pet einrichten. Du erhältst eine E-Mail-Bestätigung.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+          <a id="open-tenant-link" href="#" target="_blank" class="btn-primary" style="text-decoration: none; padding: 10px 22px;">
+            🌐 Tenant-Vorschau öffnen
+          </a>
+          <a href="index.html" class="btn-outline" style="text-decoration: none;">← Zurück zur Landingpage</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════ */
+var STATE = {
+  modules: [],
+  branches: [],
+  selected: new Set(["core"]),
+  tenant: { name: "", id: "", branch: "", email: "" },
+  currentStage: 1
+};
+
+var DEVHUB_ENDPOINT = "https://devhub.iil.pet/api/tenants/create";
+var ADMIN_EMAIL = "admin@iil.pet";
+
+/* ════════════════════════════════════════════════════
+   LOAD MODULES.JSON
+════════════════════════════════════════════════════ */
+fetch("data/modules.json")
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    STATE.modules = data.modules;
+    STATE.branches = data.branches;
+    STATE.discountThreshold = data.discount_threshold || 3;
+    STATE.discountPercent = data.discount_percent || 15;
+    renderBranchChips();
+    renderModuleCards();
+    updatePrice();
+  })
+  .catch(function(e) {
+    document.getElementById("module-cards").innerHTML =
+      '<p style="color: var(--danger); padding: 1rem;">Module konnten nicht geladen werden: ' + e.message + '</p>';
+  });
+
+/* ════════════════════════════════════════════════════
+   RENDER BRANCH CHIPS
+════════════════════════════════════════════════════ */
+function renderBranchChips() {
+  var container = document.getElementById("branch-chips");
+  container.innerHTML = STATE.branches.map(function(b) {
+    return '<button class="branch-chip" data-branch="' + b.id + '" onclick="selectBranch(\'' + b.id + '\')">' + b.label + '</button>';
+  }).join("");
+}
+
+function selectBranch(branchId) {
+  var branch = STATE.branches.find(function(b) { return b.id === branchId; });
+  if (!branch) return;
+  STATE.selected = new Set(branch.recommended_modules);
+  STATE.selected.add("core");
+  document.querySelectorAll(".branch-chip").forEach(function(c) {
+    c.classList.toggle("active", c.dataset.branch === branchId);
+  });
+  renderModuleCards();
+  updatePrice();
+  document.getElementById("input-branch").value =
+    ["wohnbau","gewerbebau","gutachten","digital"].includes(branchId) ? branchId : "sonstige";
+  validateForm();
+}
+
+/* ════════════════════════════════════════════════════
+   RENDER MODULE CARDS
+════════════════════════════════════════════════════ */
+function renderModuleCards() {
+  var container = document.getElementById("module-cards");
+  container.innerHTML = STATE.modules.map(function(m) {
+    var sel = STATE.selected.has(m.id);
+    var req = m.required;
+    return '<div class="module-card' + (sel ? ' selected' : '') + (req ? ' required' : '') + '" ' +
+      'id="mcard-' + m.id + '" ' +
+      (req ? '' : 'onclick="toggleModule(\'' + m.id + '\')"') + '>' +
+      '<div class="module-checkbox">' +
+        '<svg width="13" height="10" viewBox="0 0 13 10" fill="none">' +
+          '<path d="M1 5L4.5 8.5L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="module-icon">' + m.icon + '</div>' +
+      '<div class="module-body">' +
+        '<div class="module-top">' +
+          '<div>' +
+            '<div class="module-pkg">' + m.package + '</div>' +
+            '<div class="module-name">' + m.name + '</div>' +
+          '</div>' +
+          '<div class="module-price">' +
+            (req ? '<span style="color: var(--success); font-size: 0.9rem; font-weight: 700;">Inklusive</span>' :
+              '<span class="price-main">' + m.pricing.monthly_eur + ' €</span><br/>/ Monat' +
+              (m.pricing.setup_eur > 0 ? '<br/><span style="font-size:0.72rem;">+ ' + m.pricing.setup_eur + ' € Setup</span>' : '')) +
+          '</div>' +
+        '</div>' +
+        '<div class="module-tagline">' + m.tagline + '</div>' +
+        '<div class="module-features">' +
+          m.features.slice(0, 4).map(function(f) { return '<span class="feat-chip">' + f + '</span>'; }).join("") +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function toggleModule(id) {
+  if (STATE.selected.has(id)) {
+    STATE.selected.delete(id);
+  } else {
+    STATE.selected.add(id);
+  }
+  document.querySelectorAll(".branch-chip").forEach(function(c) { c.classList.remove("active"); });
+  renderModuleCards();
+  updatePrice();
+  validateForm();
+}
+
+/* ════════════════════════════════════════════════════
+   PRICE CALCULATION
+════════════════════════════════════════════════════ */
+function updatePrice() {
+  var selectedModules = STATE.modules.filter(function(m) { return STATE.selected.has(m.id); });
+  var nonFreeCount = selectedModules.filter(function(m) { return !m.required; }).length;
+  var discount = nonFreeCount >= STATE.discountThreshold;
+
+  var setupTotal = 0, monthlyTotal = 0;
+  var lines = "";
+
+  selectedModules.forEach(function(m) {
+    if (m.required) {
+      lines += '<div class="price-line"><span>' + m.name + '</span><span class="val">inklusive</span></div>';
+    } else {
+      var monthly = discount ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+      var setup = m.pricing.setup_eur;
+      setupTotal += setup;
+      monthlyTotal += monthly;
+      lines += '<div class="price-line"><span>' + m.name + '</span><span class="val">' +
+        monthly + ' €/mo' + (setup > 0 ? ' + ' + setup + ' € Setup' : '') + '</span></div>';
+    }
+  });
+
+  document.getElementById("price-lines").innerHTML = lines || '<div class="price-line"><span>nl2cad-core</span><span class="val">inklusive</span></div>';
+  document.getElementById("discount-badge").style.display = discount ? "" : "none";
+  document.getElementById("total-setup").textContent = setupTotal > 0 ? setupTotal + " €" : "0 €";
+  document.getElementById("total-monthly").textContent = monthlyTotal + " € / Monat";
+}
+
+/* ════════════════════════════════════════════════════
+   FORM VALIDATION
+════════════════════════════════════════════════════ */
+document.getElementById("input-tenant-name").addEventListener("input", function() {
+  var val = this.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (!document.getElementById("input-tenant-id").dataset.manual) {
+    document.getElementById("input-tenant-id").value = val;
+  }
+  validateForm();
+});
+document.getElementById("input-tenant-id").addEventListener("input", function() {
+  this.dataset.manual = "1";
+  validateForm();
+});
+document.getElementById("input-email").addEventListener("input", validateForm);
+document.getElementById("input-branch").addEventListener("change", validateForm);
+
+function validateForm() {
+  var name = document.getElementById("input-tenant-name").value.trim();
+  var id = document.getElementById("input-tenant-id").value.trim();
+  var email = document.getElementById("input-email").value.trim();
+  var branch = document.getElementById("input-branch").value;
+  var ok = name.length > 1 && id.length > 1 && email.includes("@") && branch;
+  document.getElementById("btn-to-proposal").disabled = !ok;
+  if (ok) {
+    STATE.tenant = { name: name, id: id, branch: branch, email: email };
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════ */
+function goToProposal() {
+  buildProposal();
+  setStage(2);
+}
+
+function goToOnboarding() {
+  buildOnboarding();
+  setStage(3);
+}
+
+function goBack(from) {
+  setStage(from - 1);
+}
+
+function setStage(n) {
+  STATE.currentStage = n;
+  document.querySelectorAll(".stage").forEach(function(s) { s.classList.remove("active"); });
+  document.getElementById("stage-" + n).classList.add("active");
+  for (var i = 1; i <= 3; i++) {
+    var step = document.getElementById("step-" + i);
+    step.classList.remove("active", "done");
+    if (i < n) step.classList.add("done");
+    else if (i === n) step.classList.add("active");
+  }
+  var num3 = document.getElementById("step3-num");
+  if (n > 3) { num3.innerHTML = "✓"; } else { num3.textContent = "3"; }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ════════════════════════════════════════════════════
+   BUILD PROPOSAL (STAGE 2)
+════════════════════════════════════════════════════ */
+function buildProposal() {
+  var selectedModules = STATE.modules.filter(function(m) { return STATE.selected.has(m.id); });
+  var nonFreeCount = selectedModules.filter(function(m) { return !m.required; }).length;
+  var discount = nonFreeCount >= STATE.discountThreshold;
+
+  document.getElementById("proposal-tenant-name").textContent = STATE.tenant.name;
+  document.getElementById("proposal-date").textContent = new Date().toLocaleDateString("de-DE", { year: "numeric", month: "long", day: "numeric" });
+
+  /* Price boxes */
+  var setupTotal = 0, monthlyTotal = 0;
+  selectedModules.forEach(function(m) {
+    if (!m.required) {
+      var monthly = discount ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+      setupTotal += m.pricing.setup_eur;
+      monthlyTotal += monthly;
+    }
+  });
+  document.getElementById("proposal-price-grid").innerHTML =
+    '<div class="price-box"><div class="pb-label">Setup (einmalig)</div><div class="pb-val">' + setupTotal + ' €</div><div class="pb-sub">netto zzgl. MwSt.</div></div>' +
+    '<div class="price-box highlight"><div class="pb-label">Monatlich</div><div class="pb-val">' + monthlyTotal + ' €</div><div class="pb-sub">netto zzgl. MwSt.</div></div>' +
+    '<div class="price-box"><div class="pb-label">Jährlich</div><div class="pb-val">' + (monthlyTotal * 12) + ' €</div><div class="pb-sub">' + (discount ? "inkl. 15% Rabatt" : "ohne Rabatt") + '</div></div>';
+
+  /* Module list */
+  document.getElementById("proposal-module-list").innerHTML = selectedModules.map(function(m) {
+    var monthly = (!m.required && discount) ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+    return '<div class="msl-item">' +
+      '<span class="msl-icon">' + m.icon + '</span>' +
+      '<span class="msl-name">' + m.name + '</span>' +
+      (m.required ? '<span class="msl-required">Basis</span>' : '<span class="msl-price">' + monthly + ' €/mo</span>') +
+    '</div>';
+  }).join("");
+
+  /* Arch diagram */
+  var archHtml = "";
+  var ordered = ["nlp", "brandschutz", "gaeb", "areas", "core"];
+  ordered.forEach(function(id) {
+    var m = STATE.modules.find(function(x) { return x.id === id; });
+    if (!m) return;
+    var active = STATE.selected.has(id);
+    archHtml += '<div class="arch-row">';
+    if (id !== "core") archHtml += '<span class="arch-arrow" style="margin-left:' + (id === "areas" ? "20px" : "0") + '">↓</span>';
+    archHtml += '<div class="arch-box' + (active ? ' active" style="background:' + m.color + '; border-color:' + m.color + '"' : '"') + '>' + m.package + '</div>';
+    if (!active) archHtml += '<span style="font-size:0.72rem; color: var(--text-dim); margin-left:0.5rem;">nicht gewählt</span>';
+    archHtml += '</div>';
+  });
+  document.getElementById("proposal-arch").innerHTML = archHtml;
+
+  /* pip install */
+  var pkgs = selectedModules.map(function(m) { return '<span class="pkg-name">' + m.package + '</span>'; }).join(" ");
+  document.getElementById("proposal-install").innerHTML = "pip install " + pkgs;
+
+  /* TenantConfig code */
+  var enabledList = selectedModules.map(function(m) { return '"' + m.id + '"'; }).join(", ");
+  var gaebPhase = STATE.selected.has("gaeb") ? "X83" : "—";
+  document.getElementById("proposal-code").innerHTML =
+    '<span class="c-cm"># tenant_config.py — generiert am ' + new Date().toLocaleDateString("de-DE") + '</span>\n' +
+    '<span class="c-kw">from</span> <span class="c-cls">dataclasses</span> <span class="c-kw">import</span> dataclass, field\n' +
+    '<span class="c-kw">from</span> <span class="c-cls">pathlib</span> <span class="c-kw">import</span> Path\n\n' +
+    '<span class="c-op">@</span><span class="c-fn">dataclass</span>\n' +
+    '<span class="c-kw">class</span> <span class="c-cls">TenantConfig</span>:\n' +
+    '    tenant_id: <span class="c-cls">str</span> <span class="c-op">=</span> <span class="c-str">"' + STATE.tenant.id + '"</span>\n' +
+    '    name: <span class="c-cls">str</span> <span class="c-op">=</span> <span class="c-str">"' + STATE.tenant.name + '"</span>\n' +
+    '    data_root: <span class="c-cls">Path</span> <span class="c-op">=</span> <span class="c-cls">Path</span>(<span class="c-str">"/data/tenants/' + STATE.tenant.id + '"</span>)\n' +
+    '    enabled_packages: <span class="c-cls">list</span>[<span class="c-cls">str</span>] <span class="c-op">=</span> field(default_factory<span class="c-op">=</span><span class="c-kw">lambda</span>: [' + enabledList + '])\n' +
+    (STATE.selected.has("gaeb") ? '    gaeb_phase_default: <span class="c-cls">str</span> <span class="c-op">=</span> <span class="c-str">"' + gaebPhase + '"</span>\n' : '') +
+    (STATE.selected.has("nlp") ? '    llm_enabled: <span class="c-cls">bool</span> <span class="c-op">=</span> <span class="c-kw">True</span>\n' : '') +
+    '\n    <span class="c-op">@property</span>\n' +
+    '    <span class="c-kw">def</span> <span class="c-fn">nl_patterns_path</span>(self) <span class="c-op">-></span> <span class="c-cls">Path</span>:\n' +
+    '        <span class="c-kw">return</span> self.data_root <span class="c-op">/</span> <span class="c-str">"nl_patterns.json"</span>\n\n' +
+    '<span class="c-cm"># Verwendung:</span>\n' +
+    'config <span class="c-op">=</span> <span class="c-cls">TenantConfig</span>()\n';
+
+  /* Pipeline code */
+  var pipelineImports = ["CADHandlerPipeline", "FileInputHandler"];
+  var pipelineAdds = ['        .<span class="c-fn">add</span>(<span class="c-cls">FileInputHandler</span>())'];
+  if (STATE.selected.has("core")) { pipelineImports.push("IFCQualityHandler", "MassenHandler"); pipelineAdds.push('        .<span class="c-fn">add</span>(<span class="c-cls">IFCQualityHandler</span>())'); pipelineAdds.push('        .<span class="c-fn">add</span>(<span class="c-cls">MassenHandler</span>())'); }
+  var pipelineCode =
+    '<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.core <span class="c-kw">import</span> ' + pipelineImports.join(", ") + '\n';
+  if (STATE.selected.has("areas")) pipelineCode += '<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.areas.din277 <span class="c-kw">import</span> <span class="c-cls">DIN277Calculator</span>\n';
+  if (STATE.selected.has("brandschutz")) pipelineCode += '<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.brandschutz.analyzer <span class="c-kw">import</span> <span class="c-cls">BrandschutzAnalyzer</span>\n';
+  if (STATE.selected.has("gaeb")) pipelineCode += '<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.gaeb.converter <span class="c-kw">import</span> <span class="c-cls">IFCX83Converter</span>\n';
+  if (STATE.selected.has("nlp")) pipelineCode += '<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.nlp.intent <span class="c-kw">import</span> <span class="c-cls">IntentClassifier</span>\n';
+  pipelineCode += '\npipeline <span class="c-op">=</span> (\n    <span class="c-cls">CADHandlerPipeline</span>()\n' + pipelineAdds.join("\n") + '\n)\n';
+  pipelineCode += '\nresults <span class="c-op">=</span> pipeline.<span class="c-fn">run</span>({\n';
+  pipelineCode += '    <span class="c-str">"file_path"</span>: <span class="c-str">"projekt.ifc"</span>,\n';
+  pipelineCode += '    <span class="c-str">"tenant_id"</span>: <span class="c-str">"' + STATE.tenant.id + '"</span>,\n';
+  pipelineCode += '})\n';
+  document.getElementById("proposal-pipeline").innerHTML = pipelineCode;
+}
+
+/* ════════════════════════════════════════════════════
+   DOWNLOAD tenant_config.py
+════════════════════════════════════════════════════ */
+function downloadConfig() {
+  var selectedModules = STATE.modules.filter(function(m) { return STATE.selected.has(m.id); });
+  var enabledList = selectedModules.map(function(m) { return '"' + m.id + '"'; }).join(", ");
+  var content = "# tenant_config.py — generiert von nl2cad Konfigurator\n";
+  content += "# Tenant: " + STATE.tenant.name + " | " + new Date().toLocaleDateString("de-DE") + "\n\n";
+  content += "from dataclasses import dataclass, field\n";
+  content += "from pathlib import Path\n\n\n";
+  content += "@dataclass\n";
+  content += "class TenantConfig:\n";
+  content += '    tenant_id: str = "' + STATE.tenant.id + '"\n';
+  content += '    name: str = "' + STATE.tenant.name + '"\n';
+  content += '    data_root: Path = Path("/data/tenants/' + STATE.tenant.id + '")\n';
+  content += "    enabled_packages: list[str] = field(default_factory=lambda: [" + enabledList + "])\n";
+  if (STATE.selected.has("gaeb")) content += '    gaeb_phase_default: str = "X83"\n';
+  if (STATE.selected.has("nlp")) content += "    llm_enabled: bool = True\n";
+  content += "\n    @property\n";
+  content += '    def nl_patterns_path(self) -> Path:\n';
+  content += '        return self.data_root / "nl_patterns.json"\n\n\n';
+  content += "# Verwendung:\n";
+  content += "config = TenantConfig()\n";
+
+  var blob = new Blob([content], { type: "text/plain" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "tenant_config_" + STATE.tenant.id + ".py";
+  a.click();
+}
+
+/* ════════════════════════════════════════════════════
+   PRINT / BROSCHÜRE
+════════════════════════════════════════════════════ */
+function printProposal() {
+  window.print();
+}
+
+/* ════════════════════════════════════════════════════
+   BUILD ONBOARDING (STAGE 3)
+════════════════════════════════════════════════════ */
+function buildOnboarding() {
+  var tenantUrl = window.location.origin + "/nl2cad/?tenant=" + STATE.tenant.id;
+  document.getElementById("onboarding-url").textContent = tenantUrl;
+  document.getElementById("open-tenant-link").href = tenantUrl;
+  document.getElementById("email-to-label").textContent = "Bestätigung an " + STATE.tenant.email;
+  document.getElementById("badge-post").className = "badge-pending";
+  document.getElementById("badge-email").className = "badge-pending";
+  document.getElementById("onboarding-success").style.display = "none";
+  document.getElementById("btn-activate").disabled = false;
+  document.getElementById("btn-activate").textContent = "🚀 Jetzt beauftragen";
+}
+
+/* ════════════════════════════════════════════════════
+   ACTIVATE TENANT — POST + mailto
+════════════════════════════════════════════════════ */
+function activateTenant() {
+  var btn = document.getElementById("btn-activate");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Übermittle…';
+  document.getElementById("badge-post").innerHTML = '<span class="spinner"></span>';
+
+  var selectedModules = STATE.modules.filter(function(m) { return STATE.selected.has(m.id); });
+  var nonFreeCount = selectedModules.filter(function(m) { return !m.required; }).length;
+  var discount = nonFreeCount >= STATE.discountThreshold;
+  var monthlyTotal = 0;
+  selectedModules.forEach(function(m) {
+    if (!m.required) {
+      monthlyTotal += discount ? Math.round(m.pricing.monthly_eur * (1 - STATE.discountPercent / 100)) : m.pricing.monthly_eur;
+    }
+  });
+
+  var payload = {
+    tenant_id: STATE.tenant.id,
+    tenant_name: STATE.tenant.name,
+    contact_email: STATE.tenant.email,
+    branch: STATE.tenant.branch,
+    enabled_packages: Array.from(STATE.selected),
+    monthly_eur: monthlyTotal,
+    requested_at: new Date().toISOString(),
+    source: "nl2cad-configurator"
+  };
+
+  /* POST to devhub */
+  fetch(DEVHUB_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) {
+    document.getElementById("badge-post").className = r.ok ? "badge-done" : "badge-pending";
+    document.getElementById("badge-post").textContent = r.ok ? "Gesendet ✓" : "Fehler";
+  })
+  .catch(function() {
+    /* Endpoint noch nicht live — trotzdem E-Mail öffnen */
+    document.getElementById("badge-post").className = "badge-pending";
+    document.getElementById("badge-post").textContent = "Offline";
+  })
+  .finally(function() {
+    /* E-Mail-Draft */
+    openMailto(payload);
+    document.getElementById("badge-email").className = "badge-done";
+    document.getElementById("badge-email").textContent = "Geöffnet ✓";
+    btn.textContent = "✓ Beauftragung ausgelöst";
+    document.getElementById("onboarding-success").style.display = "block";
+    document.getElementById("open-tenant-link").href =
+      "index.html?tenant=" + STATE.tenant.id;
+  });
+}
+
+function openMailto(payload) {
+  var subject = "[nl2cad] Neuer Tenant: " + payload.tenant_name + " (" + payload.tenant_id + ")";
+  var body = "Neuer Tenant-Antrag vom nl2cad Konfigurator\n\n";
+  body += "Tenant-ID:     " + payload.tenant_id + "\n";
+  body += "Name:          " + payload.tenant_name + "\n";
+  body += "Kontakt:       " + payload.contact_email + "\n";
+  body += "Branche:       " + payload.branch + "\n";
+  body += "Module:        " + payload.enabled_packages.join(", ") + "\n";
+  body += "Monatlich:     " + payload.monthly_eur + " EUR\n";
+  body += "Zeitpunkt:     " + payload.requested_at + "\n\n";
+  body += "Bitte Tenant auf devhub.iil.pet anlegen.\n";
+  var mailto = "mailto:" + ADMIN_EMAIL +
+    "?subject=" + encodeURIComponent(subject) +
+    "&body=" + encodeURIComponent(body) +
+    "&cc=" + encodeURIComponent(payload.contact_email);
+  window.location.href = mailto;
+}
+</script>
+</body>
+</html>
