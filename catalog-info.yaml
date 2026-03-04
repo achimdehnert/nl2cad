@@ -1,0 +1,49 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: nl2cad
+  description: "Python Library für BIM/CAD-Verarbeitung — IFC/DXF parsing, DIN 277, Brandschutz, GAEB, NLP"
+  annotations:
+    github.com/project-slug: achimdehnert/nl2cad
+spec:
+  type: library
+  lifecycle: production
+  owner: achim-dehnert
+  system: cad-platform
+  x-pypi-packages:
+    - name: nl2cad-core
+      pypi_name: nl2cad-core
+      tag_prefix: "nl2cad-core@"
+      root_package: false
+      workflow_file: publish.yml
+      environment_name: pypi
+    - name: nl2cad-areas
+      pypi_name: nl2cad-areas
+      tag_prefix: "nl2cad-areas@"
+      root_package: false
+      workflow_file: publish.yml
+      environment_name: pypi
+    - name: nl2cad-brandschutz
+      pypi_name: nl2cad-brandschutz
+      tag_prefix: "nl2cad-brandschutz@"
+      root_package: false
+      workflow_file: publish.yml
+      environment_name: pypi
+    - name: nl2cad-gaeb
+      pypi_name: nl2cad-gaeb
+      tag_prefix: "nl2cad-gaeb@"
+      root_package: false
+      workflow_file: publish.yml
+      environment_name: pypi
+    - name: nl2cad-nlp
+      pypi_name: nl2cad-nlp
+      tag_prefix: "nl2cad-nlp@"
+      root_package: false
+      workflow_file: publish.yml
+      environment_name: pypi
+    - name: iil-nl2cadfw
+      pypi_name: iil-nl2cadfw
+      tag_prefix: "iil-nl2cadfw@"
+      root_package: true
+      workflow_file: publish.yml
+      environment_name: pypi
