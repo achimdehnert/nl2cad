@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nl2cad — BIM/CAD Python Library</title>
+  <meta name="description" content="Framework-agnostische Python-Library für IFC/DXF-Verarbeitung, DIN 277, Brandschutz und GAEB-Export. Tenantfähig, multi-mandantenfähig." />
+
+  <!-- Tenant-Konfiguration: wird dynamisch via URL-Parameter oder window.NL2CAD_TENANT gesetzt -->
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var tenantId = params.get("tenant") || (window.NL2CAD_TENANT && window.NL2CAD_TENANT.id) || "default";
+
+      var tenants = {
+        default: {
+          name: "nl2cad",
+          tagline: "BIM/CAD Python Library für die Baubranche",
+          accent: "#2563eb",
+          accentDark: "#1d4ed8",
+          logo: null,
+          badge: null,
+          contactUrl: "https://github.com/achimdehnert/nl2cad",
+          contactLabel: "GitHub"
+        },
+        baufirma: {
+          name: "BauDigital Pro",
+          tagline: "IFC/DXF-Analyse powered by nl2cad",
+          accent: "#059669",
+          accentDark: "#047857",
+          logo: null,
+          badge: "Bauunternehmen Edition",
+          contactUrl: "#kontakt",
+          contactLabel: "Kontakt aufnehmen"
+        },
+        architekt: {
+          name: "ArchiSuite",
+          tagline: "Intelligente Grundrissanalyse für Architekturbüros",
+          accent: "#7c3aed",
+          accentDark: "#6d28d9",
+          logo: null,
+          badge: "Architekturbüro Edition",
+          contactUrl: "#kontakt",
+          contactLabel: "Demo anfragen"
+        },
+        gutachter: {
+          name: "GutachterTool",
+          tagline: "DIN 277 & WoFlV Berechnungen für Sachverständige",
+          accent: "#dc2626",
+          accentDark: "#b91c1c",
+          logo: null,
+          badge: "Gutachter Edition",
+          contactUrl: "#kontakt",
+          contactLabel: "Lizenz anfragen"
+        }
+      };
+
+      var t = tenants[tenantId] || tenants["default"];
+      document.documentElement.style.setProperty("--accent", t.accent);
+      document.documentElement.style.setProperty("--accent-dark", t.accentDark);
+      window._NL2CAD_TENANT_CONFIG = t;
+      window._NL2CAD_TENANT_ID = tenantId;
+    })();
+  </script>
+
+  <style>
+    :root {
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card2: #162032;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border: #334155;
+      --code-bg: #0d1117;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* ── NAVBAR ─────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-brand .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: white;
+    }
+    .nav-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: white !important;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--accent-dark) !important; color: white !important; }
+
+    /* ── HERO ────────────────────────────────────────── */
+    .hero {
+      padding: 100px 2rem 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--accent) 20%, transparent), transparent);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 860px; margin: 0 auto; position: relative; }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      color: var(--accent);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── INSTALL SNIPPET ────────────────────────────── */
+    .install-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 20px;
+      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .install-box .pkg { color: var(--success); }
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── BADGES ─────────────────────────────────────── */
+    .badges {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+    /* ── SECTION ────────────────────────────────────── */
+    section { padding: 80px 2rem; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    /* ── PACKAGES GRID ──────────────────────────────── */
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .pkg-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .pkg-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .pkg-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .pkg-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .pkg-name {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.2rem;
+    }
+    .pkg-title { font-weight: 700; font-size: 1.05rem; }
+    .pkg-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
+    .pkg-deps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .dep-chip {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+    }
+
+    /* ── TENANT SHOWCASE ─────────────────────────────── */
+    .tenant-section { background: var(--bg-card2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .tenant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+    .tenant-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .tenant-card:hover { transform: translateY(-2px); }
+    .tenant-card .tc-accent {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .tenant-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .tenant-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .tenant-card .tc-link {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+    .tenant-card:hover .tc-link { color: var(--accent); }
+
+    /* ── CODE EXAMPLE ────────────────────────────────── */
+    .code-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+    .code-tab {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      border: none;
+      background: none;
+    }
+    .code-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+    .code-tab:hover { color: var(--text-muted); }
+    .code-block-wrapper {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      overflow: hidden;
+    }
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-block-dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+    .code-block-lang {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: monospace;
+    }
+    .code-content {
+      padding: 1.5rem;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      display: none;
+    }
+    .code-content.active { display: block; }
+    .c-kw { color: #c792ea; }
+    .c-fn { color: #82aaff; }
+    .c-str { color: #c3e88d; }
+    .c-cm { color: #546e7a; font-style: italic; }
+    .c-num { color: #f78c6c; }
+    .c-cls { color: #ffcb6b; }
+    .c-op { color: #89ddff; }
+    .c-var { color: #eeffff; }
+
+    /* ── FEATURES ────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 0.75rem; }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-card p { font-size: 0.88rem; color: var(--text-muted); }
+
+    /* ── PIPELINE VISUAL ─────────────────────────────── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding: 1.5rem 0;
+      flex-wrap: nowrap;
+    }
+    .pipeline-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+      min-width: 140px;
+      text-align: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    .pipeline-step:hover { border-color: var(--accent); }
+    .pipeline-step .ps-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .pipeline-step .ps-name { font-size: 0.78rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .pipeline-step .ps-desc { font-size: 0.7rem; color: var(--text-muted); }
+    .pipeline-arrow {
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      padding: 0 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      background: var(--bg-card2);
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2rem;
+    }
+    .footer-brand h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .footer-brand p { font-size: 0.85rem; color: var(--text-muted); max-width: 260px; line-height: 1.6; }
+    .footer-col h4 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 1rem; }
+    .footer-col a { display: block; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; margin-bottom: 0.5rem; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 2rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* ── TENANT SWITCHER ─────────────────────────────── */
+    .tenant-switcher {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 200;
+    }
+    .ts-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: all 0.2s;
+    }
+    .ts-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .ts-panel {
+      position: absolute;
+      bottom: 54px;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      min-width: 200px;
+      display: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .ts-panel.open { display: block; }
+    .ts-panel p { font-size: 0.72rem; color: var(--text-dim); padding: 4px 8px 8px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+    .ts-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .ts-option:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .ts-option.active { color: var(--accent); }
+    .ts-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .pipeline { gap: 0.5rem; }
+      .pipeline-arrow { padding: 0 0.25rem; }
+    }
+    @media (max-width: 480px) {
+      .footer-inner { grid-template-columns: 1fr; }
+      .hero { padding: 60px 1.5rem 50px; }
+    }
+
+    /* ── ANIMATIONS ──────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeInUp 0.5s ease both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-brand" id="nav-brand">
+      <div class="logo-icon">n2</div>
+      <span id="nav-brand-name">nl2cad</span>
+      <span class="nav-badge" id="nav-badge" style="display:none"></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#packages">Packages</a></li>
+      <li><a href="#pipeline">Pipeline</a></li>
+      <li><a href="#beispiele">Beispiele</a></li>
+      <li><a href="#tenants">Mandanten</a></li>
+      <li><a href="#" id="nav-contact" class="nav-cta">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-label animate-in">
+      <span>🏗️</span>
+      <span>Python · BIM · CAD · Baubranche</span>
+    </div>
+    <h1 class="animate-in delay-1">
+      <span id="hero-title-main">nl2cad</span> —<br/>
+      <span id="hero-title-sub">IFC · DXF · DIN 277 · GAEB</span>
+    </h1>
+    <p class="hero-sub animate-in delay-2" id="hero-sub">
+      Framework-agnostische Python-Library für BIM/CAD-Verarbeitung in der deutschen Baubranche.
+      Tenantfähig, modular, produktionsreif.
+    </p>
+    <div class="hero-actions animate-in delay-3">
+      <a href="https://github.com/achimdehnert/nl2cad" class="btn btn-primary" id="hero-cta-primary">
+        ⚡ Jetzt starten
+      </a>
+      <a href="#beispiele" class="btn btn-secondary">
+        📖 Beispiele ansehen
+      </a>
+    </div>
+    <div class="animate-in delay-3">
+      <div class="install-box">
+        <span>pip install <span class="pkg">nl2cad-core</span> <span class="pkg">nl2cad-areas</span> <span class="pkg">nl2cad-gaeb</span></span>
+        <button class="copy-btn" onclick="copyInstall(this)">Kopieren</button>
+      </div>
+    </div>
+    <div class="badges animate-in delay-3">
+      <span class="badge"><span class="badge-dot"></span> Python 3.11+</span>
+      <span class="badge"><span class="badge-dot"></span> MIT Lizenz</span>
+      <span class="badge"><span class="badge-dot"></span> Multi-Tenant</span>
+      <span class="badge"><span class="badge-dot"></span> Framework-agnostisch</span>
+      <span class="badge"><span class="badge-dot"></span> IFC4 · DXF R2018</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── PACKAGES ─────────────────────────────────────────────────────────── -->
+<section id="packages">
+  <div class="section-inner">
+    <p class="section-label">Packages</p>
+    <h2 class="section-title">Modulare Library-Architektur</h2>
+    <p class="section-sub">Jedes Package kann einzeln installiert werden. Keine unnötigen Abhängigkeiten — nur was gebraucht wird.</p>
+    <div class="packages-grid">
+
+      <div class="pkg-card">
+        <div class="pkg-header">
+          <div>
+            <div class="pkg-name">nl2cad-core</div>
+            <div class="pkg-title">IFC/DXF Parser & Pipeline</div>
+          </div>
+          <div class="pkg-icon" style="background: rgba(37,99,235,0.15);">🏗️</div>
+        </div>
+        <p class="pkg-desc">IFC/DXF-Parser, Dataclasses (IFCModel, IFCRoom, DXFModel), Handler-Pipeline (Chain of Responsibility), Qualitätsprüfung.</p>
+        <div class="pkg-deps">
+          <span class="dep-chip">ifcopenshell</span>
+          <span class="dep-chip">ezdxf</span>
+          <span class="dep-chip">stdlib only</span>
+        </div>
+      </div>
+
+      <div class="pkg-card">
+        <div class="pkg-header">
+          <div>
+            <div class="pkg-name">nl2cad-areas</div>
+            <div class="pkg-title">DIN 277 & WoFlV Rechner</div>
+          </div>
+          <div class="pkg-icon" style="background: rgba(5,150,105,0.15);">📐</div>
+        </div>
+        <p class="pkg-desc">Flächenberechnung nach DIN 277 (Ausgabe 2016) und Wohnflächenverordnung. Automatische Nutzungsklassifikation (NUF, VF, TF, KGF).</p>
+        <div class="pkg-deps">
+          <span class="dep-chip">nl2cad-core</span>
+        </div>
+      </div>
+
+      <div class="pkg-card">
+        <div class="pkg-header">
+          <div>
+            <div class="pkg-name">nl2cad-brandschutz</div>
+            <div class="pkg-title">Brandschutz-Analyse</div>
+          </div>
+          <div class="pkg-icon" style="background: rgba(220,38,38,0.15);">🔥</div>
+        </div>
+        <p class="pkg-desc">Fluchtweg-Analyse nach ASR A2.3, Feuerwiderstandsklassen (DIN 4102, EN 13501), Brandabschnitts-Erkennung, Mängelprotokoll.</p>
+        <div class="pkg-deps">
+          <span class="dep-chip">nl2cad-core</span>
+          <span class="dep-chip">nl2cad-areas</span>
+        </div>
+      </div>
+
+      <div class="pkg-card">
+        <div class="pkg-header">
+          <div>
+            <div class="pkg-name">nl2cad-gaeb</div>
+            <div class="pkg-title">GAEB X81–X85 Generator</div>
+          </div>
+          <div class="pkg-icon" style="background: rgba(245,158,11,0.15);">📋</div>
+        </div>
+        <p class="pkg-desc">GAEB-Datenaustausch (X81–X85) aus IFC-Modellen generieren. XML-Export, Excel-Ausgabe, IFC→X83 Converter. Vollständig normkonform.</p>
+        <div class="pkg-deps">
+          <span class="dep-chip">nl2cad-core</span>
+          <span class="dep-chip">openpyxl</span>
+        </div>
+      </div>
+
+      <div class="pkg-card">
+        <div class="pkg-header">
+          <div>
+            <div class="pkg-name">nl2cad-nlp</div>
+            <div class="pkg-title">Natural Language → CAD</div>
+          </div>
+          <div class="pkg-icon" style="background: rgba(124,58,237,0.15);">🧠</div>
+        </div>
+        <p class="pkg-desc">Intent-Klassifikation (Raumanalyse, DIN277, GAEB, Brandschutz ...), NL2DXF Generator (Regex + LLM-Fallback), lernender Pattern-Store.</p>
+        <div class="pkg-deps">
+          <span class="dep-chip">nl2cad-core</span>
+          <span class="dep-chip">pydantic</span>
+          <span class="dep-chip">httpx</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── PIPELINE ──────────────────────────────────────────────────────────── -->
+<section id="pipeline" style="background: var(--bg-card2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner">
+    <p class="section-label">Handler Pipeline</p>
+    <h2 class="section-title">Chain of Responsibility</h2>
+    <p class="section-sub">Jeder Handler liest aus dem akkumulierten Context, verarbeitet und gibt sein Ergebnis weiter. Vollständig komponierbar.</p>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="ps-icon">📁</div>
+        <div class="ps-name">FileInputHandler</div>
+        <div class="ps-desc">IFC / DXF erkennen & parsen</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="ps-icon">✅</div>
+        <div class="ps-name">IFCQualityHandler</div>
+        <div class="ps-desc">Modell-Qualität prüfen</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="ps-icon">📊</div>
+        <div class="ps-name">MassenHandler</div>
+        <div class="ps-desc">Massenermittlung</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="ps-icon">📐</div>
+        <div class="ps-name">DIN277Handler</div>
+        <div class="ps-desc">Nutzflächen berechnen</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="ps-icon">🔥</div>
+        <div class="ps-name">BrandschutzHandler</div>
+        <div class="ps-desc">Mängel analysieren</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="ps-icon">📋</div>
+        <div class="ps-name">GAEBHandler</div>
+        <div class="ps-desc">LV exportieren</div>
+      </div>
+    </div>
+    <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 1rem;">
+      ↑ Eigene Handler: <code style="color: var(--accent);">class MyHandler(BaseCADHandler)</code> — füge beliebige Schritte in die Pipeline ein.
+    </p>
+  </div>
+</section>
+
+<!-- ── CODE BEISPIELE ───────────────────────────────────────────────────── -->
+<section id="beispiele">
+  <div class="section-inner">
+    <p class="section-label">Code-Beispiele</p>
+    <h2 class="section-title">In 3 Zeilen produktionsreif</h2>
+    <p class="section-sub">Von der IFC-Datei zum GAEB-Export — oder per Natural Language zum DXF-Befehl.</p>
+
+    <div style="max-width: 780px;">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="showTab('quickstart', this)">Quick Start</button>
+        <button class="code-tab" onclick="showTab('pipeline-code', this)">Pipeline</button>
+        <button class="code-tab" onclick="showTab('nlp-code', this)">NLP / NL2DXF</button>
+        <button class="code-tab" onclick="showTab('tenant-code', this)">Tenant-Config</button>
+      </div>
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <div class="code-block-dots">
+            <div class="dot dot-r"></div>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
+          </div>
+          <span class="code-block-lang">Python 3.11+</span>
+        </div>
+
+        <!-- Quick Start -->
+        <pre class="code-content active" id="tab-quickstart"><span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.core.parsers <span class="c-kw">import</span> <span class="c-cls">IFCParser</span>
+<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.areas.din277 <span class="c-kw">import</span> <span class="c-cls">DIN277Calculator</span>
+<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.brandschutz.analyzer <span class="c-kw">import</span> <span class="c-cls">BrandschutzAnalyzer</span>
+<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.gaeb.converter <span class="c-kw">import</span> <span class="c-cls">IFCX83Converter</span>
+
+<span class="c-cm"># IFC parsen</span>
+parser <span class="c-op">=</span> <span class="c-cls">IFCParser</span>()
+model <span class="c-op">=</span> parser.<span class="c-fn">parse</span>(<span class="c-str">"gebaeude.ifc"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"</span><span class="c-op">{</span>model.floor_count<span class="c-op">}</span><span class="c-str"> Geschosse, </span><span class="c-op">{</span>model.total_area_m2<span class="c-op">:.1f}</span><span class="c-str"> m² gesamt"</span>)
+
+<span class="c-cm"># DIN 277 berechnen</span>
+calc <span class="c-op">=</span> <span class="c-cls">DIN277Calculator</span>()
+result <span class="c-op">=</span> calc.<span class="c-fn">calculate</span>(model.rooms)
+<span class="c-fn">print</span>(<span class="c-str">f"NUF: </span><span class="c-op">{</span>result.nutzungsflaeche_m2<span class="c-op">:.1f}</span><span class="c-str"> m²"</span>)
+
+<span class="c-cm"># Brandschutz analysieren</span>
+analyzer <span class="c-op">=</span> <span class="c-cls">BrandschutzAnalyzer</span>()
+bs_result <span class="c-op">=</span> analyzer.<span class="c-fn">analyze</span>(model)
+<span class="c-kw">for</span> mangel <span class="c-kw">in</span> bs_result.maengel:
+    <span class="c-fn">print</span>(<span class="c-str">f"⚠  </span><span class="c-op">{</span>mangel.beschreibung<span class="c-op">}</span><span class="c-str">"</span>)
+
+<span class="c-cm"># GAEB X83 exportieren</span>
+converter <span class="c-op">=</span> <span class="c-cls">IFCX83Converter</span>()
+xml_bytes <span class="c-op">=</span> converter.<span class="c-fn">convert_to_x83</span>(model, projekt_name<span class="c-op">=</span><span class="c-str">"Neubau EFH"</span>)</pre>
+
+        <!-- Pipeline -->
+        <pre class="code-content" id="tab-pipeline-code"><span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.core <span class="c-kw">import</span> (
+    <span class="c-cls">CADHandlerPipeline</span>, <span class="c-cls">FileInputHandler</span>,
+    <span class="c-cls">IFCQualityHandler</span>, <span class="c-cls">MassenHandler</span>
+)
+
+<span class="c-cm"># Pipeline zusammenstellen</span>
+pipeline <span class="c-op">=</span> (
+    <span class="c-cls">CADHandlerPipeline</span>(continue_on_error<span class="c-op">=</span><span class="c-kw">False</span>)
+    .<span class="c-fn">add</span>(<span class="c-cls">FileInputHandler</span>())
+    .<span class="c-fn">add</span>(<span class="c-cls">IFCQualityHandler</span>())
+    .<span class="c-fn">add</span>(<span class="c-cls">MassenHandler</span>())
+)
+
+<span class="c-cm"># Ausführen (IFC-Bytes aus Upload)</span>
+results <span class="c-op">=</span> pipeline.<span class="c-fn">run</span>({
+    <span class="c-str">"file_content"</span>: ifc_bytes,
+    <span class="c-str">"filename"</span>: <span class="c-str">"projekt.ifc"</span>,
+    <span class="c-str">"tenant_id"</span>: <span class="c-str">"mandant-42"</span>,  <span class="c-cm"># ← Tenant-Context</span>
+})
+
+ctx <span class="c-op">=</span> pipeline.<span class="c-fn">get_context</span>()
+<span class="c-fn">print</span>(ctx[<span class="c-str">"massen"</span>])     <span class="c-cm"># MassenErgebnis</span>
+<span class="c-fn">print</span>(pipeline.success)  <span class="c-cm"># True / False</span>
+<span class="c-fn">print</span>(pipeline.warnings) <span class="c-cm"># Qualitätsmeldungen</span></pre>
+
+        <!-- NLP -->
+        <pre class="code-content" id="tab-nlp-code"><span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.nlp.intent <span class="c-kw">import</span> <span class="c-cls">IntentClassifier</span>, <span class="c-cls">NLIntent</span>
+<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.nlp.nl2dxf <span class="c-kw">import</span> <span class="c-cls">NL2DXFGenerator</span>
+<span class="c-kw">from</span> <span class="c-cls">nl2cad</span>.nlp.learning <span class="c-kw">import</span> <span class="c-cls">NLLearningStore</span>
+
+<span class="c-cm"># Intent erkennen</span>
+clf <span class="c-op">=</span> <span class="c-cls">IntentClassifier</span>()
+result <span class="c-op">=</span> clf.<span class="c-fn">classify</span>(<span class="c-str">"Wie viele Räume hat das Gebäude?"</span>)
+<span class="c-cm"># → IntentResult(intent=RAUMANALYSE, confidence=0.5)</span>
+
+<span class="c-cm"># NL → DXF-Befehle (Regex-Fallback, kein LLM nötig)</span>
+gen <span class="c-op">=</span> <span class="c-cls">NL2DXFGenerator</span>()
+dxf_result <span class="c-op">=</span> gen.<span class="c-fn">generate</span>(<span class="c-str">"Zeichne einen Raum 6 x 4 m"</span>)
+<span class="c-cm"># → NL2DXFResult(success=True, commands=[RECT 6x4])</span>
+
+<span class="c-cm"># Lernender Pattern-Store (tenant-isoliert per data_path)</span>
+store <span class="c-op">=</span> <span class="c-cls">NLLearningStore</span>(
+    data_path<span class="c-op">=</span>Path(<span class="c-str">f"/data/tenants/</span><span class="c-op">{</span>tenant_id<span class="c-op">}</span><span class="c-str">/nl_patterns.json"</span>)
+)
+store.<span class="c-fn">add</span>(<span class="c-str">"NGF berechnen"</span>, <span class="c-str">"din277"</span>)</pre>
+
+        <!-- Tenant Config -->
+        <pre class="code-content" id="tab-tenant-code"><span class="c-kw">from</span> <span class="c-cls">dataclasses</span> <span class="c-kw">import</span> dataclass, field
+<span class="c-kw">from</span> <span class="c-cls">pathlib</span> <span class="c-kw">import</span> <span class="c-cls">Path</span>
+
+<span class="c-cm"># Vorgeschlagene TenantConfig-Dataclass (nl2cad-core)</span>
+<span class="c-op">@</span><span class="c-fn">dataclass</span>
+<span class="c-kw">class</span> <span class="c-cls">TenantConfig</span>:
+    tenant_id: <span class="c-cls">str</span>
+    name: <span class="c-cls">str</span>
+    data_root: <span class="c-cls">Path</span> <span class="c-op">=</span> <span class="c-cls">Path</span>(<span class="c-str">"/data/tenants"</span>)
+
+    <span class="c-cm"># Erlaubte Packages steuern (Lizenz-Modell)</span>
+    enabled_packages: <span class="c-cls">list</span>[<span class="c-cls">str</span>] <span class="c-op">=</span> field(default_factory<span class="c-op">=</span><span class="c-kw">lambda</span>: [
+        <span class="c-str">"core"</span>, <span class="c-str">"areas"</span>, <span class="c-str">"brandschutz"</span>, <span class="c-str">"gaeb"</span>, <span class="c-str">"nlp"</span>
+    ])
+
+    <span class="c-cm"># Fachliche Konfiguration pro Mandant</span>
+    din277_profile: <span class="c-cls">str</span> <span class="c-op">=</span> <span class="c-str">"standard"</span>  <span class="c-cm"># standard | wohnbau | gewerbebau</span>
+    gaeb_phase_default: <span class="c-cls">str</span> <span class="c-op">=</span> <span class="c-str">"X83"</span>
+    max_file_size_mb: <span class="c-cls">int</span> <span class="c-op">=</span> <span class="c-num">50</span>
+
+    <span class="c-op">@property</span>
+    <span class="c-kw">def</span> <span class="c-fn">nl_patterns_path</span>(self) <span class="c-op">-></span> <span class="c-cls">Path</span>:
+        <span class="c-kw">return</span> self.data_root / self.tenant_id / <span class="c-str">"nl_patterns.json"</span>
+
+<span class="c-cm"># Nutzung in cad-hub (Django-Consumer)</span>
+config <span class="c-op">=</span> <span class="c-cls">TenantConfig</span>(tenant_id<span class="c-op">=</span><span class="c-str">"mandant-42"</span>, name<span class="c-op">=</span><span class="c-str">"Baufirma GmbH"</span>)
+store <span class="c-op">=</span> <span class="c-cls">NLLearningStore</span>(data_path<span class="c-op">=</span>config.nl_patterns_path)</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ──────────────────────────────────────────────────────────── -->
+<section id="features" style="background: var(--bg-card2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner">
+    <p class="section-label">Features</p>
+    <h2 class="section-title">Produktionsreif aus der Box</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🏢</div>
+        <h3>Multi-Tenant ready</h3>
+        <p>Jede Pipeline kann tenant-isoliert laufen. NL-Lernstore, Konfiguration und Datenpfade sind pro Mandant trennbar.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔌</div>
+        <h3>Framework-agnostisch</h3>
+        <p>Kein Django, kein FastAPI, kein HTTP. Reine Python-Library — integrierbar in jeden Stack.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⛓️</div>
+        <h3>Erweiterbare Pipeline</h3>
+        <p>Eigene Handler mit <code>BaseCADHandler</code> in 3 Zeilen. Chain of Responsibility, klar definierte Interfaces.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📏</div>
+        <h3>DIN 277 & WoFlV</h3>
+        <p>Vollständige Umsetzung der DIN 277 (2016) und Wohnflächenverordnung. Automatische Nutzungsklassifikation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔥</div>
+        <h3>Brandschutz-Analyse</h3>
+        <p>Fluchtweg-Prüfung nach ASR A2.3, Feuerwiderstandsklassen (DIN 4102 / EN 13501), Mängelprotokoll.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>GAEB X81–X85</h3>
+        <p>Vollständiger GAEB-Datenaustausch aus IFC. XML + Excel-Export. IFC → X83 Converter inklusive.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>NL-Intent-Klassifikation</h3>
+        <p>Natürlichsprachliche Queries auf BIM-Intents mappen. Lernender JSON-Store, LLM-Fallback optional.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔬</div>
+        <h3>Strict Typing & Tests</h3>
+        <p>mypy strict, ruff linting, pytest ≥ 80% Coverage. Alle Maßfelder tragen Einheits-Suffix (<code>_m2</code>, <code>_m</code>).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TENANT SHOWCASE ───────────────────────────────────────────────────── -->
+<section id="tenants" class="tenant-section">
+  <div class="section-inner">
+    <p class="section-label">Multi-Tenant</p>
+    <h2 class="section-title">Eine Library, viele Mandanten</h2>
+    <p class="section-sub">
+      nl2cad unterstützt mandantenfähigen Betrieb: Datenpfade, NL-Muster, GAEB-Konfiguration und erlaubte Packages sind pro Tenant konfigurierbar.
+      Klicke auf einen Mandanten-Typ, um die angepasste Ansicht zu sehen.
+    </p>
+    <div class="tenant-grid">
+      <a class="tenant-card" href="?tenant=default" style="border-color: #2563eb;">
+        <div class="tc-accent" style="background: #2563eb;"></div>
+        <h3>Open Source / Standard</h3>
+        <p>Voller Zugriff auf alle Packages. Ideal für Entwickler und Integration in eigene Stacks.</p>
+        <span class="tc-link">→ Standard-Ansicht</span>
+      </a>
+      <a class="tenant-card" href="?tenant=baufirma">
+        <div class="tc-accent" style="background: #059669;"></div>
+        <h3>Bauunternehmen</h3>
+        <p>Fokus auf Massenermittlung, GAEB-Export und Ausschreibungs-Workflows. Optimiert für Bauleiter.</p>
+        <span class="tc-link">→ Bauunternehmen-Edition</span>
+      </a>
+      <a class="tenant-card" href="?tenant=architekt">
+        <div class="tc-accent" style="background: #7c3aed;"></div>
+        <h3>Architekturbüro</h3>
+        <p>IFC-Parsing, DIN 277-Analyse, Raumbucher­stellung und NL2DXF für schnelle Entwurfs-Iteration.</p>
+        <span class="tc-link">→ Architekturbüro-Edition</span>
+      </a>
+      <a class="tenant-card" href="?tenant=gutachter">
+        <div class="tc-accent" style="background: #dc2626;"></div>
+        <h3>Sachverständiger</h3>
+        <p>Brandschutz-Analyse (ASR A2.3), WoFlV-Berechnung, IFC-Qualitätsprüfung für Gutachten.</p>
+        <span class="tc-link">→ Gutachter-Edition</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHITEKTUR ───────────────────────────────────────────────────────── -->
+<section id="architektur">
+  <div class="section-inner">
+    <p class="section-label">Architektur</p>
+    <h2 class="section-title">Klare Dependency-Grenzen</h2>
+    <p class="section-sub">Strikte Package-Grenzen verhindern ungewollte Abhängigkeiten. Kein Pydantic in Core, kein Django nirgends.</p>
+    <div style="background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; overflow-x: auto;">
+      <pre style="font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.82rem; line-height: 1.8; color: var(--text-muted);">
+<span style="color: #c792ea;">nl2cad-nlp</span>         <span style="color: #546e7a;">(pydantic, httpx, OpenAI/Anthropic)</span>
+  └── <span style="color: #ffcb6b;">nl2cad-brandschutz</span>  ──┐
+  └── <span style="color: #f78c6c;">nl2cad-gaeb</span>          │
+  └── <span style="color: #c3e88d;">nl2cad-areas</span>         ├──→  <span style="color: #82aaff;">nl2cad-core</span>  (ifcopenshell, ezdxf, stdlib)
+          └── <span style="color: #82aaff;">nl2cad-core</span>  ─────┘
+
+<span style="color: #546e7a;">┌─────────────────────────────────────────────────────────────┐
+│  VERBOTEN in core / areas / gaeb / brandschutz:              │
+│  ✗ pydantic   ✗ httpx   ✗ Django ORM   ✗ print()            │
+└─────────────────────────────────────────────────────────────┘</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3 id="footer-brand-name">nl2cad</h3>
+      <p>Framework-agnostische Python-Library für BIM/CAD-Verarbeitung. MIT-lizenziert, offen für alle.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Packages</h4>
+      <a href="https://pypi.org/project/nl2cad-core/">nl2cad-core</a>
+      <a href="https://pypi.org/project/nl2cad-areas/">nl2cad-areas</a>
+      <a href="https://pypi.org/project/nl2cad-brandschutz/">nl2cad-brandschutz</a>
+      <a href="https://pypi.org/project/nl2cad-gaeb/">nl2cad-gaeb</a>
+      <a href="#">nl2cad-nlp</a>
+    </div>
+    <div class="footer-col">
+      <h4>Ressourcen</h4>
+      <a href="https://github.com/achimdehnert/nl2cad">GitHub</a>
+      <a href="https://github.com/achimdehnert/nl2cad/blob/main/AGENTS.md">AGENTS.md</a>
+      <a href="https://github.com/achimdehnert/nl2cad/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/achimdehnert/nl2cad/blob/main/CONTRIBUTING.md">Contributing</a>
+    </div>
+    <div class="footer-col">
+      <h4>Normen</h4>
+      <a href="#">DIN 277 (2016)</a>
+      <a href="#">WoFlV</a>
+      <a href="#">GAEB X81–X85</a>
+      <a href="#">ASR A2.3</a>
+      <a href="#">DIN 4102 / EN 13501</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span id="footer-copy">© 2026 nl2cad — MIT License</span>
+    <span>Python 3.11+ · uv · hatchling</span>
+  </div>
+</footer>
+
+<!-- ── TENANT SWITCHER (floating) ─────────────────────────────────────────── -->
+<div class="tenant-switcher">
+  <div class="ts-panel" id="ts-panel">
+    <p>Mandant wechseln</p>
+    <button class="ts-option" onclick="switchTenant('default')">
+      <span class="ts-dot" style="background: #2563eb;"></span> Standard
+    </button>
+    <button class="ts-option" onclick="switchTenant('baufirma')">
+      <span class="ts-dot" style="background: #059669;"></span> Bauunternehmen
+    </button>
+    <button class="ts-option" onclick="switchTenant('architekt')">
+      <span class="ts-dot" style="background: #7c3aed;"></span> Architekturbüro
+    </button>
+    <button class="ts-option" onclick="switchTenant('gutachter')">
+      <span class="ts-dot" style="background: #dc2626;"></span> Sachverständiger
+    </button>
+  </div>
+  <button class="ts-btn" onclick="toggleTenantPanel()" title="Mandant wechseln">🏢</button>
+</div>
+
+<script>
+  /* ── Tenant-Initialisierung ─────────────────────────────── */
+  (function () {
+    var t = window._NL2CAD_TENANT_CONFIG;
+    if (!t) return;
+
+    if (t.name !== "nl2cad") {
+      document.getElementById("nav-brand-name").textContent = t.name;
+      document.getElementById("footer-brand-name").textContent = t.name;
+      document.querySelector(".hero h1").innerHTML =
+        "<span>" + t.name + "</span><br/><span style='font-size:0.65em; color: var(--text-muted);'>" + t.tagline + "</span>";
+      document.getElementById("hero-sub").textContent = t.tagline;
+    }
+    if (t.badge) {
+      var badge = document.getElementById("nav-badge");
+      badge.textContent = t.badge;
+      badge.style.display = "";
+    }
+    var contact = document.getElementById("nav-contact");
+    contact.textContent = t.contactLabel;
+    contact.href = t.contactUrl;
+  })();
+
+  /* ── Code Tabs ──────────────────────────────────────────── */
+  function showTab(id, btn) {
+    document.querySelectorAll(".code-content").forEach(function (el) {
+      el.classList.remove("active");
+    });
+    document.querySelectorAll(".code-tab").forEach(function (el) {
+      el.classList.remove("active");
+    });
+    document.getElementById("tab-" + id).classList.add("active");
+    btn.classList.add("active");
+  }
+
+  /* ── Install-Copy ───────────────────────────────────────── */
+  function copyInstall(btn) {
+    navigator.clipboard.writeText(
+      "pip install nl2cad-core nl2cad-areas nl2cad-gaeb"
+    ).then(function () {
+      btn.textContent = "Kopiert ✓";
+      setTimeout(function () { btn.textContent = "Kopieren"; }, 2000);
+    });
+  }
+
+  /* ── Tenant Switcher ────────────────────────────────────── */
+  function toggleTenantPanel() {
+    document.getElementById("ts-panel").classList.toggle("open");
+  }
+  function switchTenant(id) {
+    var url = new URL(window.location.href);
+    url.searchParams.set("tenant", id);
+    window.location.href = url.toString();
+  }
+  document.addEventListener("click", function (e) {
+    var sw = document.querySelector(".tenant-switcher");
+    if (!sw.contains(e.target)) {
+      document.getElementById("ts-panel").classList.remove("open");
+    }
+  });
+
+  /* ── Active Tenant in Switcher markieren ────────────────── */
+  (function () {
+    var id = window._NL2CAD_TENANT_ID || "default";
+    document.querySelectorAll(".ts-option").forEach(function (btn) {
+      if (btn.textContent.trim().toLowerCase().includes(
+        id === "default" ? "standard" :
+        id === "baufirma" ? "bauunternehmen" :
+        id === "architekt" ? "architekturbüro" :
+        id === "gutachter" ? "sachverständiger" : ""
+      )) {
+        btn.classList.add("active");
+      }
+    });
+  })();
+</script>
+</body>
+</html>

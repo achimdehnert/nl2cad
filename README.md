@@ -4,8 +4,11 @@
 [![PyPI nl2cad-core](https://img.shields.io/pypi/v/nl2cad-core.svg?label=nl2cad-core)](https://pypi.org/project/nl2cad-core/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Website](https://img.shields.io/badge/Website-nl2cad-2563eb?logo=github)](https://achimdehnert.github.io/nl2cad/)
 
 Framework-agnostische Python-Library für IFC/DXF-Verarbeitung, DIN 277, Brandschutz und GAEB-Export.
+
+→ **[achimdehnert.github.io/nl2cad](https://achimdehnert.github.io/nl2cad/)** — Landingpage (tenantfähig)
 
 ## Packages
 
