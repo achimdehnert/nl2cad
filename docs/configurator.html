@@ -592,9 +592,21 @@ var DEVHUB_ENDPOINT = "https://devhub.iil.pet/api/tenants/create";
 var ADMIN_EMAIL = "admin@iil.pet";
 
 /* ════════════════════════════════════════════════════
-   LOAD MODULES.JSON
+   DATA URL — konfigurierbar für Phase B/C
+   Priorität: ?modules_api=URL > window.NL2CAD_MODULES_API > statische JSON
+   Phase B: https://devhub.iil.pet/api/registry/modules/?product=nl2cad
+   Phase C: https://registry.iil.pet/api/modules/?product=nl2cad
 ════════════════════════════════════════════════════ */
-fetch("data/modules.json")
+var DATA_URL = (
+  new URLSearchParams(window.location.search).get("modules_api") ||
+  (typeof window.NL2CAD_MODULES_API !== "undefined" ? window.NL2CAD_MODULES_API : null) ||
+  "data/modules.json"
+);
+
+/* ════════════════════════════════════════════════════
+   LOAD MODULES
+════════════════════════════════════════════════════ */
+fetch(DATA_URL)
   .then(function(r) { return r.json(); })
   .then(function(data) {
     STATE.modules = data.modules;
