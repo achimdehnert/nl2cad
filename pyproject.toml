@@ -1,6 +1,6 @@
 [project]
 name = "iil-nl2cadfw"
-version = "0.1.0"
+version = "0.1.1"
 description = "NL2CAD Framework — IFC/DXF parsing, DIN 277 area calculation, Brandschutz, GAEB and NLP-to-CAD intent classification"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,17 +22,23 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-dependencies = []
+dependencies = [
+    "nl2cad-core>=0.1.0",
+    "nl2cad-areas>=0.1.0",
+    "nl2cad-brandschutz>=0.1.0",
+    "nl2cad-gaeb>=0.1.0",
+    "nl2cad-nlp>=0.1.0",
+]
 
 [project.optional-dependencies]
 ifc = [
-    "ifcopenshell>=0.8.0",
+    "nl2cad-core[ifc]>=0.1.0",
 ]
 nlp = [
     "openai>=1.0",
 ]
 all = [
-    "ifcopenshell>=0.8.0",
+    "nl2cad-core[ifc]>=0.1.0",
     "openai>=1.0",
 ]
 dev = [
