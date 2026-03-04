@@ -1,6 +1,6 @@
 [project]
 name = "iil-nl2cadfw"
-version = "0.1.1"
+version = "0.1.2"
 description = "NL2CAD Framework — IFC/DXF parsing, DIN 277 area calculation, Brandschutz, GAEB and NLP-to-CAD intent classification"
 readme = "README.md"
 requires-python = ">=3.11"
