@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "nl2cad-*@*"
+      - "iil-nl2cadfw@*"
 
 jobs:
   publish:
@@ -28,7 +29,7 @@ jobs:
         id: pkg
         run: |
           TAG="${GITHUB_REF_NAME}"
-          # Tag format: nl2cad-core@0.1.0 or nl2cad-areas@0.2.0
+          # Tag format: nl2cad-core@0.1.0 or iil-nl2cadfw@0.1.1
           PACKAGE="${TAG%@*}"
           VERSION="${TAG#*@}"
           echo "package=$PACKAGE" >> $GITHUB_OUTPUT
